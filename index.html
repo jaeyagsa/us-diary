@@ -174,7 +174,15 @@
 <div class="photo-dump" id="photoDump"></div>
 
 <script>
-  const firebaseConfig = { /* your firebase config */ };
+  const firebaseConfig = {
+    apiKey: "AIzaSyDtHj92IVoxoyz2EtMVaaHVKyPP7UHDpEU",
+    authDomain: "unspoken-hearts-diary.firebaseapp.com",
+    projectId: "unspoken-hearts-diary",
+    storageBucket: "unspoken-hearts-diary.appspot.com",
+    messagingSenderId: "885095961873",
+    appId: "1:885095961873:web:4b4c846cc2b28dbce928b0",
+    measurementId: "G-2L9NESBKWN"
+  };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
   const storage = firebase.storage();
