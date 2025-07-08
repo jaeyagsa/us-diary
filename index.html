@@ -135,6 +135,12 @@
     <option value="Unsaid Thoughts">Unsaid Thoughts</option>
     <option value="Rants">Rants</option>
   </select>
+  <select id="fontSelector">
+    <option value="Arial, sans-serif">Arial</option>
+    <option value="Georgia, serif">Georgia</option>
+    <option value="Courier New, monospace">Courier New</option>
+    <option value="Times New Roman, serif">Times New Roman</option>
+  </select>
   <button onclick="submitEntry()">Submit</button>
 </div>
 
@@ -190,6 +196,7 @@
     const text = document.getElementById('entryText').value;
     const sender = document.getElementById('entrySender').value;
     const category = document.getElementById('entryCategory').value;
+    const font = document.getElementById('fontSelector').value;
     const file = document.getElementById('entryImage').files[0];
 
     if (!text.trim() && !file) {
@@ -197,7 +204,7 @@
       return;
     }
 
-    const entryData = { text, sender, category, timestamp: Date.now(), replies: [] };
+    const entryData = { text, sender, category, font, timestamp: Date.now(), replies: [] };
 
     if(file) {
       const storageRef = storage.ref('images/' + Date.now() + '_' + file.name);
@@ -231,6 +238,7 @@
 
         const div = document.createElement('div');
         div.className = 'diary-entry ' + data.sender;
+        div.style.fontFamily = data.font || 'Arial, sans-serif';
 
         const timeString = new Date(data.timestamp).toLocaleString();
 
