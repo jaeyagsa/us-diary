@@ -13,112 +13,85 @@
 
     body {
       font-family: 'Quicksand', sans-serif;
-      background-color: #fff0f5;
+      background-color: #fff;
       color: #333;
       padding: 20px;
       max-width: 800px;
       margin: auto;
-      animation: fadeInBody 1s ease;
-      position: relative;
-      overflow-x: hidden;
+      transition: background-color 0.5s ease, color 0.5s ease;
     }
 
-    @keyframes fadeInBody { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes bounceIn { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes fadeInEntry { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes floatHeart { 0% { transform: translateY(0) scale(1.2); opacity: 0.8; } 50% { transform: translateY(-300px) scale(1.5); opacity: 0.4; } 100% { transform: translateY(-600px) scale(1); opacity: 0; } }
+    body.dark {
+      background-color: #121212;
+      color: #f0f0f0;
+    }
 
     h1 {
+      font-size: 2.5rem;
       text-align: center;
-      font-size: 40px;
-      font-family: 'Pacifico', cursive;
       color: #ff69b4;
-      animation: bounceIn 1s ease;
+      margin-bottom: 10px;
     }
 
-    h2 {
-      text-align: center;
-      color: #ff69b4;
-      animation: fadeIn 1s ease;
+    body.dark h1 {
+      color: #ffa3d7;
     }
 
     textarea, input[type="file"], select, button {
       width: 100%;
       padding: 10px;
       margin-top: 10px;
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-      font-family: 'Quicksand', sans-serif;
-      transition: transform 0.2s;
+      border-radius: 8px;
+      border: none;
+      background: #fff;
+      color: #333;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
-    button:hover { background-color: #ff69b4; transform: scale(1.05); }
-
-    .password-screen {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: #fff0f5;
-      position: fixed;
-      width: 100%;
-      top: 0;
-      left: 0;
-      z-index: 1000;
-      animation: fadeIn 1s ease;
+    body.dark textarea, body.dark input[type="file"], body.dark select, body.dark button {
+      background: #333;
+      color: #eee;
+      box-shadow: none;
     }
 
     .diary-entry {
-      background: #fffafc;
-      border-radius: 15px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      background: #fafafa;
+      border-radius: 12px;
       padding: 15px;
-      margin-bottom: 15px;
-      animation: fadeInEntry 0.5s ease;
+      margin-top: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: background 0.3s ease;
     }
 
-    .diary-entry.red { background-color: #ffe6f0; }
-    .diary-entry.blue { background-color: #e6f7ff; }
-
-    .diary-entry img { max-width: 100%; border-radius: 12px; margin-top: 10px; animation: fadeIn 0.8s ease; }
+    body.dark .diary-entry {
+      background: #1e1e1e;
+    }
 
     .reply {
-      margin-top: 15px;
-      background: #f9f9f9;
-      border-radius: 10px;
+      margin-top: 10px;
       padding: 10px;
-      animation: fadeIn 1s ease;
+      border-top: 1px solid #ccc;
+    }
+
+    body.dark .reply {
+      border-top: 1px solid #555;
     }
 
     .reply p {
-      background: #fff;
-      padding: 8px;
-      border-radius: 8px;
-      margin-bottom: 5px;
+      margin: 5px 0;
+      font-size: 0.9rem;
+      color: inherit;
     }
 
-    .photo-dump { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-    .photo-dump img { max-width: 100px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); animation: fadeIn 1s ease; }
-
-    .mood-buttons { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
-
-    .heart {
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      background: pink;
-      border-radius: 50%;
-      animation: floatHeart 8s linear infinite;
-      opacity: 0.8;
-      transform: scale(1.2);
+    .photo-dump img {
+      max-width: 80px;
+      border-radius: 8px;
+      margin: 5px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
     }
   </style>
 </head>
 <body>
-
-<div class="floating-hearts"></div>
 
 <div class="password-screen">
   <div>
@@ -130,7 +103,7 @@
 
 <h1>💌 Unspoken Hearts</h1>
 
-<button onclick="toggleDarkMode()">Toggle Dark/Light Mode</button>
+<button onclick="toggleDarkMode()">Toggle Dark Mode</button>
 
 <div>
   <select id="entrySender">
@@ -180,8 +153,7 @@
     projectId: "unspoken-hearts-diary",
     storageBucket: "unspoken-hearts-diary.appspot.com",
     messagingSenderId: "885095961873",
-    appId: "1:885095961873:web:4b4c846cc2b28dbce928b0",
-    measurementId: "G-2L9NESBKWN"
+    appId: "1:885095961873:web:4b4c846cc2b28dbce928b0"
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
@@ -253,7 +225,7 @@
           <p>${data.text || ''}</p>
           ${data.image ? `<img src="${data.image}" alt="Attached Image">` : ''}
           <div class="reply">
-            ${(data.replies || []).map(r => `<p>${r}</p>`).join('')}
+            ${(data.replies || []).map(r => `<p>${r.text} <small style="display:block;opacity:0.6;">${new Date(r.time).toLocaleString()}</small></p>`).join('')}
             <input type="text" placeholder="Reply..." id="reply-${doc.id}">
             <button onclick="addReply('${doc.id}')">↩️</button>
             <button onclick="deleteEntry('${doc.id}')">🗑️</button>
@@ -277,8 +249,10 @@
     const replyText = replyInput.value;
     if(!replyText.trim()) return;
 
+    const replyData = { text: replyText, time: Date.now() };
+
     const entryRef = db.collection('entries').doc(id);
-    entryRef.update({ replies: firebase.firestore.FieldValue.arrayUnion(replyText) }).then(() => {
+    entryRef.update({ replies: firebase.firestore.FieldValue.arrayUnion(replyData) }).then(() => {
       replyInput.value = '';
     });
   }
@@ -296,19 +270,6 @@
       .catch(() => alert('Failed to send mood.'));
   }
 
-  function createFloatingHearts() {
-    const container = document.querySelector('.floating-hearts');
-    setInterval(() => {
-      const heart = document.createElement('div');
-      heart.className = 'heart';
-      heart.style.left = Math.random() * 100 + '%';
-      heart.style.background = ['#ff99cc', '#ff66b2', '#ffb6c1', '#ffcce6'][Math.floor(Math.random() * 4)];
-      container.appendChild(heart);
-      setTimeout(() => heart.remove(), 8000);
-    }, 800);
-  }
-
-  createFloatingHearts();
   loadEntries();
 </script>
 
