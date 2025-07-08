@@ -276,7 +276,14 @@
           <p>${data.text || ''}</p>
           ${data.image ? `<img src="${data.image}" alt="Attached Image">` : ''}
           <div class="reply">
-            ${(data.replies || []).map(r => `<p>${r}</p>`).join('')}
+            ${(data.replies || []).map(r => {
+              if (typeof r === 'string') {
+                return `<p>${r}</p>`;
+              } else {
+                const replyTime = new Date(r.timestamp).toLocaleString();
+                return `<p>${r.text}<br><small style="font-size:0.75em;color:gray;">${replyTime}</small></p>`;
+              }
+            }).join('')}
             <input type="text" placeholder="Reply..." id="reply-${doc.id}">
             <button onclick="addReply('${doc.id}')">↩️</button>
             <button onclick="deleteEntry('${doc.id}')">🗑️</button>
@@ -300,8 +307,10 @@
     const replyText = replyInput.value;
     if(!replyText.trim()) return;
 
+    const replyWithTime = { text: replyText, timestamp: Date.now() };
+
     const entryRef = db.collection('entries').doc(id);
-    entryRef.update({ replies: firebase.firestore.FieldValue.arrayUnion(replyText) }).then(() => {
+    entryRef.update({ replies: firebase.firestore.FieldValue.arrayUnion(replyWithTime) }).then(() => {
       replyInput.value = '';
     });
   }
