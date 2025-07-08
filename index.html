@@ -94,6 +94,13 @@
       <option value="girl">Girl 💖</option>
       <option value="boy">Boy 💙</option>
     </select>
+
+    <select id="entryCategory">
+      <option value="Love Letter">Love Letter 💌</option>
+      <option value="Unsaid Thoughts">Unsaid Thoughts 🤐</option>
+      <option value="Rants">Rants 😤</option>
+    </select>
+
     <input type="text" id="entryTitle" placeholder="Title">
     <textarea id="entryText" rows="4" placeholder="Your thoughts..."></textarea>
     <input type="file" id="entryImage">
@@ -141,6 +148,7 @@
       const title = document.getElementById("entryTitle").value.trim();
       const text = document.getElementById("entryText").value.trim();
       const sender = document.getElementById("entrySender").value;
+      const category = document.getElementById("entryCategory").value;
       const imageInput = document.getElementById("entryImage");
 
       if (!title || !text) {
@@ -157,6 +165,7 @@
           title,
           text,
           sender,
+          category,
           image: imageUrl,
           time: new Date().toLocaleString()
         };
@@ -227,7 +236,7 @@
       entryDiv.className = 'entry';
       entryDiv.style.backgroundColor = entry.sender === 'girl' ? '#ffe6e6' : '#e6f0ff';
 
-      let content = `<strong>${entry.title}</strong><p>${entry.text}</p><small>${entry.time}</small>`;
+      let content = `<strong>${entry.title}</strong> <em>(${entry.category})</em><p>${entry.text}</p><small>${entry.time}</small>`;
       if (entry.image) content += `<br><img src="${entry.image}" alt="Attached">`;
       content += `<br><button onclick="editEntry('${id}')">Edit</button>
                   <button onclick="deleteEntry('${id}')">Delete</button>
