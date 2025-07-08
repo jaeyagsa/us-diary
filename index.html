@@ -110,11 +110,25 @@
     <button onclick="sendMood('Excited 😍')">😍 Excited</button>
   </div>
 
-  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
-  <script>
-    (function() {
-      emailjs.init('QuFveASS-r2Favhcs');
-    })();
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, orderBy, query } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtHj92IVoxoyz2EtMVaaHVKyPP7UHDpEU",
+      authDomain: "unspoken-hearts-diary.firebaseapp.com",
+      projectId: "unspoken-hearts-diary",
+      storageBucket: "unspoken-hearts-diary.appspot.com",
+      messagingSenderId: "885095961873",
+      appId: "1:885095961873:web:4b4c846cc2b28dbce928b0",
+      measurementId: "G-2L9NESBKWN"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    import emailjs from "https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js";
+    emailjs.init('QuFveASS-r2Favhcs');
 
     function sendMood(mood) {
       const templateParams = { mood: mood };
@@ -123,7 +137,7 @@
         .catch(() => alert("Failed to send mood."));
     }
 
-    function addEntry() {
+    async function addEntry() {
       const title = document.getElementById("entryTitle").value.trim();
       const text = document.getElementById("entryText").value.trim();
       const sender = document.getElementById("entrySender").value;
@@ -136,11 +150,10 @@
 
       const reader = new FileReader();
       const file = imageInput.files[0];
-      reader.onload = function(e) {
+      reader.onload = async function(e) {
         const imageUrl = file ? e.target.result : "";
 
         const newEntry = {
-          id: Date.now(),
           title,
           text,
           sender,
@@ -148,17 +161,12 @@
           time: new Date().toLocaleString()
         };
 
-        const entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
-        entries.unshift(newEntry);
-        localStorage.setItem('diaryEntries', JSON.stringify(entries));
+        await addDoc(collection(db, "diaryEntries"), newEntry);
 
         if (imageUrl) addToPhotoDump(imageUrl);
-
         document.getElementById("entryTitle").value = "";
         document.getElementById("entryText").value = "";
         document.getElementById("entryImage").value = "";
-
-        loadEntries();
       };
 
       if (file) {
@@ -169,44 +177,41 @@
     }
 
     function loadEntries() {
-      const entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
       const container = document.getElementById("entriesContainer");
       container.innerHTML = "";
-      entries.forEach(entry => {
-        const div = renderEntry(entry);
-        container.appendChild(div);
+
+      const q = query(collection(db, "diaryEntries"), orderBy("time", "desc"));
+
+      onSnapshot(q, (querySnapshot) => {
+        container.innerHTML = "";
+        querySnapshot.forEach((docSnap) => {
+          const entry = docSnap.data();
+          const div = renderEntry(docSnap.id, entry);
+          container.appendChild(div);
+        });
       });
     }
 
-    function editEntry(id) {
-      const entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
-      const entry = entries.find(e => e.id === id);
-      if (!entry) return;
-
-      const newTitle = prompt("Edit Title", entry.title);
-      const newText = prompt("Edit Text", entry.text);
+    async function editEntry(id) {
+      const newTitle = prompt("Edit Title");
+      const newText = prompt("Edit Text");
       if (newTitle && newText) {
-        entry.title = newTitle;
-        entry.text = newText;
-        localStorage.setItem('diaryEntries', JSON.stringify(entries));
-        loadEntries();
+        const entryRef = doc(db, "diaryEntries", id);
+        await updateDoc(entryRef, { title: newTitle, text: newText });
       }
     }
 
-    function deleteEntry(id) {
-      let entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
-      entries = entries.filter(e => e.id !== id);
-      localStorage.setItem('diaryEntries', JSON.stringify(entries));
-      loadEntries();
+    async function deleteEntry(id) {
+      const entryRef = doc(db, "diaryEntries", id);
+      await deleteDoc(entryRef);
     }
 
-    function replyToEntry(parentId) {
+    async function replyToEntry(parentId) {
       const replyText = prompt("Your reply:");
       const sender = document.getElementById("entrySender").value;
       if (!replyText) return;
 
       const replyEntry = {
-        id: Date.now(),
         title: "Reply",
         text: replyText,
         sender,
@@ -214,25 +219,19 @@
         time: new Date().toLocaleString()
       };
 
-      const entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
-      const index = entries.findIndex(e => e.id === parentId);
-      if (index !== -1) {
-        entries.splice(index + 1, 0, replyEntry);
-        localStorage.setItem('diaryEntries', JSON.stringify(entries));
-        loadEntries();
-      }
+      await addDoc(collection(db, "diaryEntries"), replyEntry);
     }
 
-    function renderEntry(entry) {
+    function renderEntry(id, entry) {
       const entryDiv = document.createElement('div');
       entryDiv.className = 'entry';
       entryDiv.style.backgroundColor = entry.sender === 'girl' ? '#ffe6e6' : '#e6f0ff';
 
       let content = `<strong>${entry.title}</strong><p>${entry.text}</p><small>${entry.time}</small>`;
       if (entry.image) content += `<br><img src="${entry.image}" alt="Attached">`;
-      content += `<br><button onclick="editEntry(${entry.id})">Edit</button>
-                  <button onclick="deleteEntry(${entry.id})">Delete</button>
-                  <button onclick="replyToEntry(${entry.id})">Reply</button>`;
+      content += `<br><button onclick="editEntry('${id}')">Edit</button>
+                  <button onclick="deleteEntry('${id}')">Delete</button>
+                  <button onclick="replyToEntry('${id}')">Reply</button>`;
 
       entryDiv.innerHTML = content;
       return entryDiv;
@@ -245,7 +244,7 @@
       photoDumpContainer.appendChild(img);
     }
 
-    window.onload = loadEntries;
+    loadEntries();
 
   </script>
 
