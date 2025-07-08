@@ -1,0 +1,169 @@
+<!-- Shared Diary Complete with All Features Using Local Storage and Dropdown Sender -->
+
+<!-- EmailJS SDK -->
+<script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
+<script type="text/javascript">
+(function() {
+  emailjs.init('QuFveASS-r2Favhcs');
+})();
+
+function sendMood(mood) {
+  const templateParams = {
+    mood: mood
+  };
+
+  emailjs.send('service_g01f5f1', 'template_vzvlohc', templateParams)
+    .then(function(response) {
+       alert("Your partner has been notified: " + mood);
+    }, function(error) {
+       alert("Failed to send mood. Please try again.");
+    });
+}
+
+function addEntry() {
+  const title = document.getElementById("entryTitle").value.trim();
+  const text = document.getElementById("entryText").value.trim();
+  const sender = document.getElementById("entrySender").value;
+  const imageInput = document.getElementById("entryImage");
+
+  if (!title || !text) {
+    alert("Please fill in both title and text.");
+    return;
+  }
+
+  const reader = new FileReader();
+  const file = imageInput.files[0];
+  reader.onload = function(e) {
+    const imageUrl = file ? e.target.result : "";
+
+    const newEntry = {
+      id: Date.now(),
+      title: title,
+      text: text,
+      sender: sender,
+      image: imageUrl,
+      time: new Date().toLocaleString()
+    };
+
+    const entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
+    entries.unshift(newEntry);
+    localStorage.setItem('diaryEntries', JSON.stringify(entries));
+
+    if (imageUrl) addToPhotoDump(imageUrl);
+
+    document.getElementById("entryTitle").value = "";
+    document.getElementById("entryText").value = "";
+    document.getElementById("entryImage").value = "";
+
+    loadEntries();
+  };
+
+  if (file) {
+    reader.readAsDataURL(file);
+  } else {
+    reader.onload();
+  }
+}
+
+function loadEntries() {
+  const entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
+  const container = document.getElementById("entriesContainer");
+  container.innerHTML = "";
+  entries.forEach(entry => {
+    const div = renderEntry(entry);
+    container.appendChild(div);
+  });
+}
+
+function editEntry(id) {
+  const entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
+  const entry = entries.find(e => e.id === id);
+  if (!entry) return;
+
+  const newTitle = prompt("Edit Title", entry.title);
+  const newText = prompt("Edit Text", entry.text);
+  if (newTitle && newText) {
+    entry.title = newTitle;
+    entry.text = newText;
+    localStorage.setItem('diaryEntries', JSON.stringify(entries));
+    loadEntries();
+  }
+}
+
+function deleteEntry(id) {
+  let entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
+  entries = entries.filter(e => e.id !== id);
+  localStorage.setItem('diaryEntries', JSON.stringify(entries));
+  loadEntries();
+}
+
+function replyToEntry(parentId) {
+  const replyText = prompt("Your reply:");
+  const sender = document.getElementById("entrySender").value;
+  if (!replyText) return;
+
+  const replyEntry = {
+    id: Date.now(),
+    title: "Reply",
+    text: replyText,
+    sender: sender,
+    image: "",
+    time: new Date().toLocaleString()
+  };
+
+  const entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
+  const index = entries.findIndex(e => e.id === parentId);
+  if (index !== -1) {
+    entries.splice(index + 1, 0, replyEntry);
+    localStorage.setItem('diaryEntries', JSON.stringify(entries));
+    loadEntries();
+  }
+}
+
+function renderEntry(entry) {
+  const entryDiv = document.createElement('div');
+  entryDiv.style.padding = '10px';
+  entryDiv.style.margin = '10px 0';
+  entryDiv.style.borderRadius = '10px';
+  entryDiv.style.backgroundColor = entry.sender === 'girl' ? '#ffe6e6' : '#e6f0ff';
+
+  let content = `<strong>${entry.title}</strong><p>${entry.text}</p><small>${entry.time}</small>`;
+  if (entry.image) content += `<br><img src="${entry.image}" style="max-width:100px; margin-top:10px;">`;
+  content += `<br><button onclick="editEntry(${entry.id})">Edit</button>
+              <button onclick="deleteEntry(${entry.id})">Delete</button>
+              <button onclick="replyToEntry(${entry.id})">Reply</button>`;
+
+  entryDiv.innerHTML = content;
+  return entryDiv;
+}
+
+function addToPhotoDump(imageDataUrl) {
+  const photoDumpContainer = document.getElementById('photoDump');
+  const img = document.createElement('img');
+  img.src = imageDataUrl;
+  img.style.maxWidth = '100px';
+  img.style.margin = '5px';
+  photoDumpContainer.appendChild(img);
+}
+
+window.onload = loadEntries;
+</script>
+
+<!-- Add these elements in your HTML body -->
+<div>
+  <select id="entrySender">
+    <option value="girl">Girl 💖</option>
+    <option value="boy">Boy 💙</option>
+  </select>
+  <input type="text" id="entryTitle" placeholder="Title">
+  <textarea id="entryText" placeholder="Your thoughts..."></textarea>
+  <input type="file" id="entryImage">
+  <button onclick="addEntry()">Post</button>
+</div>
+
+<div id="entriesContainer"></div>
+<div id="photoDump"></div>
+
+<button onclick="sendMood('Happy 😊')">😊 Happy</button>
+<button onclick="sendMood('Sad 😢')">😢 Sad</button>
+<button onclick="sendMood('Excited 😍')">😍 Excited</button>
