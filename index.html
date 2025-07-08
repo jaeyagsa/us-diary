@@ -21,7 +21,7 @@
       transition: background-color 0.5s ease, color 0.5s ease;
     }
 
-    body.dark {
+    body.dark-mode {
       background-color: #121212;
       color: #f0f0f0;
     }
@@ -34,7 +34,7 @@
       transition: color 0.5s ease;
     }
 
-    body.dark h1 {
+    body.dark-mode h1 {
       color: #ffa3d7;
     }
 
@@ -50,7 +50,7 @@
       transition: all 0.3s ease;
     }
 
-    body.dark textarea, body.dark input[type="file"], body.dark select, body.dark button {
+    body.dark-mode textarea, body.dark-mode input[type="file"], body.dark-mode select, body.dark-mode button {
       background: #333;
       color: #eee;
       box-shadow: none;
@@ -74,7 +74,7 @@
       transform: translateY(-3px);
     }
 
-    body.dark .diary-entry {
+    body.dark-mode .diary-entry {
       background: #1e1e1e;
     }
 
@@ -84,7 +84,7 @@
       border-top: 1px solid #ccc;
     }
 
-    body.dark .reply {
+    body.dark-mode .reply {
       border-top: 1px solid #555;
     }
 
@@ -190,7 +190,7 @@
   }
 
   function toggleDarkMode() {
-    document.body.classList.toggle('dark');
+    document.body.classList.toggle('dark-mode');
   }
 
   function submitEntry() {
