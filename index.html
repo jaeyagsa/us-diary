@@ -130,6 +130,11 @@
     <option value="red">Girl</option>
     <option value="blue">Boy</option>
   </select>
+  <select id="entryCategory">
+    <option value="Love Letter">Love Letter</option>
+    <option value="Unsaid Thoughts">Unsaid Thoughts</option>
+    <option value="Rants">Rants</option>
+  </select>
   <button onclick="submitEntry()">Submit</button>
 </div>
 
@@ -138,6 +143,14 @@
   <button onclick="sendMood('sad')">😢</button>
   <button onclick="sendMood('love')">❤️</button>
 </div>
+
+<h2>Filter by Category</h2>
+<select id="filterCategory" onchange="loadEntries()">
+  <option value="All">All</option>
+  <option value="Love Letter">Love Letter</option>
+  <option value="Unsaid Thoughts">Unsaid Thoughts</option>
+  <option value="Rants">Rants</option>
+</select>
 
 <h2>Diary Entries</h2>
 <div id="entries"></div>
@@ -176,6 +189,7 @@
   function submitEntry() {
     const text = document.getElementById('entryText').value;
     const sender = document.getElementById('entrySender').value;
+    const category = document.getElementById('entryCategory').value;
     const file = document.getElementById('entryImage').files[0];
 
     if (!text.trim() && !file) {
@@ -183,7 +197,7 @@
       return;
     }
 
-    const entryData = { text, sender, timestamp: Date.now(), replies: [] };
+    const entryData = { text, sender, category, timestamp: Date.now(), replies: [] };
 
     if(file) {
       const storageRef = storage.ref('images/' + Date.now() + '_' + file.name);
@@ -204,6 +218,7 @@
   }
 
   function loadEntries() {
+    const selectedCategory = document.getElementById('filterCategory').value;
     db.collection('entries').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
       const container = document.getElementById('entries');
       container.innerHTML = '';
@@ -212,10 +227,16 @@
 
       snapshot.forEach(doc => {
         const data = doc.data();
+        if(selectedCategory !== 'All' && data.category !== selectedCategory) return;
+
         const div = document.createElement('div');
         div.className = 'diary-entry ' + data.sender;
 
+        const timeString = new Date(data.timestamp).toLocaleString();
+
         div.innerHTML = `
+          <strong>Category: ${data.category || 'General'}</strong><br>
+          <small>${timeString}</small>
           <p>${data.text || ''}</p>
           ${data.image ? `<img src="${data.image}">` : ''}
           <div class="reply">
