@@ -9,12 +9,12 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2.6.4/dist/email.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
 
     body {
-      font-family: 'Comic Sans MS', cursive, sans-serif;
+      font-family: 'Quicksand', sans-serif;
       background-color: #fff0f5;
-      color: #444;
+      color: #333;
       padding: 20px;
       max-width: 800px;
       margin: auto;
@@ -31,7 +31,7 @@
 
     h1 {
       text-align: center;
-      font-size: 36px;
+      font-size: 40px;
       font-family: 'Pacifico', cursive;
       color: #ff69b4;
       animation: bounceIn 1s ease;
@@ -50,7 +50,7 @@
       border-radius: 12px;
       border: 1px solid #ccc;
       box-sizing: border-box;
-      font-family: 'Comic Sans MS', cursive, sans-serif;
+      font-family: 'Quicksand', sans-serif;
       transition: transform 0.2s;
     }
 
@@ -216,7 +216,7 @@
       storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(url => {
         entryData.image = url;
         saveEntry(entryData);
-      });
+      }).catch(error => alert('Image upload failed: ' + error.message));
     } else {
       saveEntry(entryData);
     }
@@ -251,7 +251,7 @@
           <strong>Category: ${data.category || 'General'}</strong><br>
           <small>${timeString}</small>
           <p>${data.text || ''}</p>
-          ${data.image ? `<img src="${data.image}">` : ''}
+          ${data.image ? `<img src="${data.image}" alt="Attached Image">` : ''}
           <div class="reply">
             ${(data.replies || []).map(r => `<p>${r}</p>`).join('')}
             <input type="text" placeholder="Reply..." id="reply-${doc.id}">
@@ -265,6 +265,7 @@
         if(data.image) {
           const img = document.createElement('img');
           img.src = data.image;
+          img.alt = 'Photo Dump Image';
           dump.appendChild(img);
         }
       });
