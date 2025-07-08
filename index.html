@@ -183,9 +183,13 @@
       let imageUrl = "";
 
       if (imageInput) {
-        const storageRef = ref(storage, 'images/' + Date.now() + '-' + imageInput.name);
-        await uploadBytes(storageRef, imageInput);
-        imageUrl = await getDownloadURL(storageRef);
+        try {
+          const storageRef = ref(storage, 'images/' + Date.now() + '-' + imageInput.name);
+          await uploadBytes(storageRef, imageInput);
+          imageUrl = await getDownloadURL(storageRef);
+        } catch (error) {
+          console.error("Image upload failed", error);
+        }
       }
 
       const newEntry = {
