@@ -1,207 +1,146 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>💌 Unspoken Hearts</title>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2.6.4/dist/email.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Quicksand', sans-serif;
-      background-color: #fff;
-      color: #333;
-      padding: 20px;
-      max-width: 800px;
-      margin: auto;
-      transition: background-color 0.5s ease, color 0.5s ease;
-    }
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyDtHj92IVoxoyz2EtMVaaHVKyPP7UHDpEU",
+  authDomain: "unspoken-hearts-diary.firebaseapp.com",
+  projectId: "unspoken-hearts-diary",
+  storageBucket: "unspoken-hearts-diary.appspot.com",
+  messagingSenderId: "885095961873",
+  appId: "1:885095961873:web:4b4c846cc2b28dbce928b0"
+};
 
-    body.dark-mode {
-      background-color: #121212;
-      color: #f0f0f0;
-    }
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
+emailjs.init('QuFveASS-r2Favhcs');
 
-    h1 {
-      font-size: 2.8rem;
-      text-align: center;
-      color: #ff69b4;
-      margin-bottom: 10px;
-      transition: color 0.5s ease;
-    }
+const PASSWORD = 'usdiary2025';
 
-    body.dark-mode h1 {
-      color: #ffa3d7;
-    }
+function checkPassword() {
+  const input = document.getElementById('passwordInput').value;
+  if (input === PASSWORD) {
+    document.querySelector('.password-screen').style.display = 'none';
+  } else {
+    alert('Incorrect password');
+  }
+}
 
-    textarea, input[type="file"], select, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 8px;
-      border: none;
-      background: #fff;
-      color: #333;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      transition: all 0.3s ease;
-    }
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+}
 
-    body.dark-mode textarea, body.dark-mode input[type="file"], body.dark-mode select, body.dark-mode button {
-      background: #333;
-      color: #eee;
-      box-shadow: none;
-    }
+function submitEntry() {
+  const text = document.getElementById('entryText').value;
+  const sender = document.getElementById('entrySender').value;
+  const category = document.getElementById('entryCategory').value;
+  const font = document.getElementById('fontSelector').value;
+  const file = document.getElementById('entryImage').files[0];
 
-    button:hover {
-      transform: scale(1.05);
-    }
+  if (!text.trim() && !file) {
+    alert('Please write something or attach an image.');
+    return;
+  }
 
-    .password-screen {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: #fff;
-      position: fixed;
-      width: 100%;
-      top: 0;
-      left: 0;
-      z-index: 1000;
-      flex-direction: column;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+  const entryData = {
+    text,
+    sender,
+    category,
+    font,
+    timestamp: Date.now(),
+    replies: []
+  };
 
-    .password-screen h2 {
-      color: #ff69b4;
-    }
+  if (file) {
+    const storageRef = storage.ref('images/' + Date.now() + '_' + file.name);
+    storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL())
+      .then(url => {
+        entryData.image = url;
+        saveEntry(entryData);
+      });
+  } else {
+    saveEntry(entryData);
+  }
+}
 
-    .diary-entry {
-      background: #fafafa;
-      border-radius: 12px;
-      padding: 15px;
-      margin-top: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      transition: background 0.3s ease, transform 0.3s ease;
-      animation: fadeIn 0.6s ease;
-    }
+function saveEntry(data) {
+  db.collection('entries').add(data).then(() => {
+    document.getElementById('entryText').value = '';
+    document.getElementById('entryImage').value = '';
+  });
+}
 
-    .diary-entry.red {
-      background-color: #ffe6ec;
-    }
+function loadEntries() {
+  const selectedCategory = document.getElementById('filterCategory').value;
+  db.collection('entries').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+    const container = document.getElementById('entries');
+    container.innerHTML = '';
+    const dump = document.getElementById('photoDump');
+    dump.innerHTML = '';
 
-    .diary-entry.blue {
-      background-color: #e6f0ff;
-    }
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (selectedCategory !== 'All' && data.category !== selectedCategory) return;
 
-    .diary-entry:hover {
-      transform: translateY(-3px);
-    }
+      const div = document.createElement('div');
+      div.className = 'diary-entry ' + data.sender;
+      div.style.fontFamily = data.font || 'Arial, sans-serif';
 
-    body.dark-mode .diary-entry {
-      background: #1e1e1e;
-    }
+      const timeString = new Date(data.timestamp).toLocaleString();
 
-    .reply {
-      margin-top: 10px;
-      padding: 10px;
-      border-top: 1px solid #ccc;
-      background: rgba(255,255,255,0.4);
-      border-radius: 8px;
-    }
+      div.innerHTML = `
+        <strong>Category: ${data.category || 'General'}</strong><br>
+        <small>${timeString}</small>
+        <p>${data.text || ''}</p>
+        ${data.image ? `<img src="${data.image}">` : ''}
+        <div class="reply">
+          ${(data.replies || []).map(r => `<p>${r.text}<small>${new Date(r.time).toLocaleString()}</small></p>`).join('')}
+          <input type="text" placeholder="Reply..." id="reply-${doc.id}">
+          <button onclick="addReply('${doc.id}')">↩️</button>
+          <button onclick="deleteEntry('${doc.id}')">🗑️</button>
+        </div>
+      `;
 
-    body.dark-mode .reply {
-      border-top: 1px solid #555;
-      background: rgba(0,0,0,0.2);
-    }
+      container.appendChild(div);
 
-    .reply p {
-      margin: 5px 0;
-      font-size: 0.9rem;
-      color: inherit;
-    }
+      if (data.image) {
+        const img = document.createElement('img');
+        img.src = data.image;
+        dump.appendChild(img);
+      }
+    });
+  });
+}
 
-    .reply small {
-      display: block;
-      font-style: italic;
-      color: #888;
-      font-size: 0.75rem;
-      margin-top: 2px;
-    }
+function addReply(id) {
+  const replyInput = document.getElementById(`reply-${id}`);
+  const replyText = replyInput.value;
+  if (!replyText.trim()) return;
 
-    .photo-dump img {
-      max-width: 80px;
-      border-radius: 8px;
-      margin: 5px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-      transition: transform 0.3s ease;
-    }
+  const entryRef = db.collection('entries').doc(id);
+  entryRef.update({
+    replies: firebase.firestore.FieldValue.arrayUnion({
+      text: replyText,
+      time: Date.now()
+    })
+  }).then(() => {
+    replyInput.value = '';
+  });
+}
 
-    .photo-dump img:hover {
-      transform: scale(1.1);
-    }
+function deleteEntry(id) {
+  if (confirm('Delete this entry?')) {
+    db.collection('entries').doc(id).delete();
+  }
+}
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
-</head>
-<body>
+function sendMood(mood) {
+  const templateParams = {
+    to_email: 'kaito2epic@gmail.com',
+    mood: mood
+  };
 
-<div class="password-screen">
-  <h2>Enter Shared Password</h2>
-  <input type="password" id="passwordInput" placeholder="Password">
-  <button onclick="checkPassword()">Enter</button>
-</div>
+  emailjs.send('service_g01f5f1', 'template_vzvlohc', templateParams)
+    .then(() => alert('Mood sent!'))
+    .catch(() => alert('Failed to send mood.'));
+}
 
-<h1>💌 Unspoken Hearts</h1>
-
-<button onclick="toggleDarkMode()">Toggle Dark Mode</button>
-
-<div>
-  <select id="entrySender">
-    <option value="red">Jeah</option>
-    <option value="blue">Dave</option>
-  </select>
-  <select id="entryCategory">
-    <option value="Love Letter">Love Letter</option>
-    <option value="Unsaid Thoughts">Unsaid Thoughts</option>
-    <option value="Rants">Rants</option>
-  </select>
-  <select id="fontSelector">
-    <option value="Arial, sans-serif">Arial</option>
-    <option value="Georgia, serif">Georgia</option>
-    <option value="Courier New, monospace">Courier New</option>
-    <option value="Times New Roman, serif">Times New Roman</option>
-  </select>
-  <textarea id="entryText" placeholder="Write something..."></textarea>
-  <input type="file" id="entryImage">
-  <button onclick="submitEntry()">Submit</button>
-</div>
-
-<div class="mood-buttons">
-  <button onclick="sendMood('happy')">😊</button>
-  <button onclick="sendMood('sad')">😢</button>
-  <button onclick="sendMood('love')">❤️</button>
-</div>
-
-<h2>Filter by Category</h2>
-<select id="filterCategory" onchange="loadEntries()">
-  <option value="All">All</option>
-  <option value="Love Letter">Love Letter</option>
-  <option value="Unsaid Thoughts">Unsaid Thoughts</option>
-  <option value="Rants">Rants</option>
-</select>
-
-<h2>Diary Entries</h2>
-<div id="entries"></div>
-
-<h2>Photo Dump</h2>
-<div class="photo-dump" id="photoDump"></div>
-
-</body>
-</html>
+loadEntries();
