@@ -9,136 +9,116 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2.6.4/dist/email.min.js"></script>
   <style>
-    :root {
-      --background-light: #f5f5f5;
-      --background-dark: #1a1a1a;
-      --text-light: #333;
-      --text-dark: #eee;
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
 
     body {
-      font-family: Arial, sans-serif;
-      background-color: var(--background-light);
-      color: var(--text-light);
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background-color: #fff0f5;
+      color: #444;
       padding: 20px;
       max-width: 800px;
       margin: auto;
-      transition: background-color 0.3s, color 0.3s;
+      animation: fadeInBody 1s ease;
+      position: relative;
+      overflow-x: hidden;
     }
 
-    body.dark {
-      background-color: var(--background-dark);
-      color: var(--text-dark);
-    }
+    @keyframes fadeInBody { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes bounceIn { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeInEntry { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes floatHeart { 0% { transform: translateY(0) scale(1.2); opacity: 0.8; } 50% { transform: translateY(-300px) scale(1.5); opacity: 0.4; } 100% { transform: translateY(-600px) scale(1); opacity: 0; } }
 
-    h1, h2 {
+    h1 {
       text-align: center;
+      font-size: 36px;
+      font-family: 'Pacifico', cursive;
+      color: #ff69b4;
+      animation: bounceIn 1s ease;
+    }
+
+    h2 {
+      text-align: center;
+      color: #ff69b4;
+      animation: fadeIn 1s ease;
     }
 
     textarea, input[type="file"], select, button {
       width: 100%;
       padding: 10px;
       margin-top: 10px;
-      border-radius: 8px;
+      border-radius: 12px;
       border: 1px solid #ccc;
       box-sizing: border-box;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      transition: transform 0.2s;
     }
 
-    button {
-      background-color: #ff7b7b;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #ff5252;
-    }
+    button:hover { background-color: #ff69b4; transform: scale(1.05); }
 
     .password-screen {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background-color: #fff;
+      background-color: #fff0f5;
       position: fixed;
       width: 100%;
       top: 0;
       left: 0;
       z-index: 1000;
+      animation: fadeIn 1s ease;
     }
 
     .diary-entry {
-      background: #fff;
+      background: #fffafc;
       border-radius: 15px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       padding: 15px;
       margin-bottom: 15px;
-      transition: background-color 0.3s, color 0.3s;
+      animation: fadeInEntry 0.5s ease;
     }
 
-    body.dark .diary-entry {
-      background: #333;
-      color: #eee;
-    }
+    .diary-entry.red { background-color: #ffe6f0; }
+    .diary-entry.blue { background-color: #e6f7ff; }
 
-    .diary-entry.red {
-      background-color: #ffe6e6;
-    }
-
-    .diary-entry.blue {
-      background-color: #e6f0ff;
-    }
-
-    body.dark .diary-entry.red {
-      background-color: #5a2c2c;
-    }
-
-    body.dark .diary-entry.blue {
-      background-color: #2c3a5a;
-    }
-
-    .diary-entry img {
-      max-width: 100%;
-      border-radius: 12px;
-      margin-top: 10px;
-    }
+    .diary-entry img { max-width: 100%; border-radius: 12px; margin-top: 10px; animation: fadeIn 0.8s ease; }
 
     .reply {
       margin-top: 15px;
-    }
-
-    .reply input {
-      width: calc(100% - 100px);
-      display: inline-block;
-    }
-
-    .reply button {
-      width: 45px;
-      margin-left: 5px;
-    }
-
-    .photo-dump {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-    }
-
-    .photo-dump img {
-      max-width: 100px;
+      background: #f9f9f9;
       border-radius: 10px;
+      padding: 10px;
+      animation: fadeIn 1s ease;
     }
 
-    .mood-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin: 15px 0;
+    .reply p {
+      background: #fff;
+      padding: 8px;
+      border-radius: 8px;
+      margin-bottom: 5px;
+    }
+
+    .photo-dump { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .photo-dump img { max-width: 100px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); animation: fadeIn 1s ease; }
+
+    .mood-buttons { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
+
+    .heart {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: pink;
+      border-radius: 50%;
+      animation: floatHeart 8s linear infinite;
+      opacity: 0.8;
+      transform: scale(1.2);
     }
   </style>
 </head>
 <body>
+
+<div class="floating-hearts"></div>
 
 <div class="password-screen">
   <div>
@@ -194,31 +174,18 @@
 <div class="photo-dump" id="photoDump"></div>
 
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyDtHj92IVoxoyz2EtMVaaHVKyPP7UHDpEU",
-    authDomain: "unspoken-hearts-diary.firebaseapp.com",
-    projectId: "unspoken-hearts-diary",
-    storageBucket: "unspoken-hearts-diary.appspot.com",
-    messagingSenderId: "885095961873",
-    appId: "1:885095961873:web:4b4c846cc2b28dbce928b0",
-    measurementId: "G-2L9NESBKWN"
-  };
-
+  const firebaseConfig = { /* your firebase config */ };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
   const storage = firebase.storage();
-
   emailjs.init('QuFveASS-r2Favhcs');
 
   const PASSWORD = 'usdiary2025';
 
   function checkPassword() {
     const input = document.getElementById('passwordInput').value;
-    if(input === PASSWORD) {
-      document.querySelector('.password-screen').style.display = 'none';
-    } else {
-      alert('Incorrect password');
-    }
+    if(input === PASSWORD) document.querySelector('.password-screen').style.display = 'none';
+    else alert('Incorrect password');
   }
 
   function toggleDarkMode() {
@@ -232,10 +199,7 @@
     const font = document.getElementById('fontSelector').value;
     const file = document.getElementById('entryImage').files[0];
 
-    if (!text.trim() && !file) {
-      alert('Please write something or attach an image.');
-      return;
-    }
+    if (!text.trim() && !file) return alert('Please write something or attach an image.');
 
     const entryData = { text, sender, category, font, timestamp: Date.now(), replies: [] };
 
@@ -305,9 +269,7 @@
     if(!replyText.trim()) return;
 
     const entryRef = db.collection('entries').doc(id);
-    entryRef.update({
-      replies: firebase.firestore.FieldValue.arrayUnion(replyText)
-    }).then(() => {
+    entryRef.update({ replies: firebase.firestore.FieldValue.arrayUnion(replyText) }).then(() => {
       replyInput.value = '';
     });
   }
@@ -319,16 +281,25 @@
   }
 
   function sendMood(mood) {
-    const templateParams = {
-      to_email: 'kaito2epic@gmail.com',
-      mood: mood
-    };
-
+    const templateParams = { to_email: 'kaito2epic@gmail.com', mood: mood };
     emailjs.send('service_g01f5f1', 'template_vzvlohc', templateParams)
       .then(() => alert('Mood sent!'))
       .catch(() => alert('Failed to send mood.'));
   }
 
+  function createFloatingHearts() {
+    const container = document.querySelector('.floating-hearts');
+    setInterval(() => {
+      const heart = document.createElement('div');
+      heart.className = 'heart';
+      heart.style.left = Math.random() * 100 + '%';
+      heart.style.background = ['#ff99cc', '#ff66b2', '#ffb6c1', '#ffcce6'][Math.floor(Math.random() * 4)];
+      container.appendChild(heart);
+      setTimeout(() => heart.remove(), 8000);
+    }, 800);
+  }
+
+  createFloatingHearts();
   loadEntries();
 </script>
 
