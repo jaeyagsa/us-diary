@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Unspoken Hearts Diary</title>
+  <title>Unspoken Hearts Diary - Enhanced</title>
   <style>
     body {
       font-family: 'Quicksand', sans-serif;
@@ -95,6 +95,12 @@
       color: white;
       cursor: pointer;
     }
+
+    @media (max-width: 600px) {
+      .diary-form, .entries, .photo-dump {
+        padding: 10px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -134,6 +140,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
     import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, orderBy, query } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDtHj92IVoxoyz2EtMVaaHVKyPP7UHDpEU",
@@ -141,12 +148,14 @@
       projectId: "unspoken-hearts-diary",
       storageBucket: "unspoken-hearts-diary.appspot.com",
       messagingSenderId: "885095961873",
-      appId: "1:885095961873:web:4b4c846cc2b28dbce928b0",
-      measurementId: "G-2L9NESBKWN"
+      appId: "1:885095961873:web:4b4c846cc2b28dbce928b0"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    signInAnonymously(auth);
 
     import emailjs from "https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js";
     emailjs.init('QuFveASS-r2Favhcs');
@@ -163,40 +172,25 @@
       const text = document.getElementById("entryText").value.trim();
       const sender = document.getElementById("entrySender").value;
       const category = document.getElementById("entryCategory").value;
-      const imageInput = document.getElementById("entryImage");
 
       if (!title || !text) {
         alert("Please fill in both title and text.");
         return;
       }
 
-      const reader = new FileReader();
-      const file = imageInput.files[0];
-      reader.onload = async function(e) {
-        const imageUrl = file ? e.target.result : "";
-
-        const newEntry = {
-          title,
-          text,
-          sender,
-          category,
-          image: imageUrl,
-          time: new Date().toLocaleString()
-        };
-
-        await addDoc(collection(db, "diaryEntries"), newEntry);
-
-        if (imageUrl) addToPhotoDump(imageUrl);
-        document.getElementById("entryTitle").value = "";
-        document.getElementById("entryText").value = "";
-        document.getElementById("entryImage").value = "";
+      const newEntry = {
+        title,
+        text,
+        sender,
+        category,
+        image: "",
+        time: new Date().toLocaleString()
       };
 
-      if (file) {
-        reader.readAsDataURL(file);
-      } else {
-        reader.onload();
-      }
+      await addDoc(collection(db, "diaryEntries"), newEntry);
+
+      document.getElementById("entryTitle").value = "";
+      document.getElementById("entryText").value = "";
     }
 
     function loadEntries() {
@@ -215,36 +209,6 @@
       });
     }
 
-    async function editEntry(id) {
-      const newTitle = prompt("Edit Title");
-      const newText = prompt("Edit Text");
-      if (newTitle && newText) {
-        const entryRef = doc(db, "diaryEntries", id);
-        await updateDoc(entryRef, { title: newTitle, text: newText });
-      }
-    }
-
-    async function deleteEntry(id) {
-      const entryRef = doc(db, "diaryEntries", id);
-      await deleteDoc(entryRef);
-    }
-
-    async function replyToEntry(parentId) {
-      const replyText = prompt("Your reply:");
-      const sender = document.getElementById("entrySender").value;
-      if (!replyText) return;
-
-      const replyEntry = {
-        title: "Reply",
-        text: replyText,
-        sender,
-        image: "",
-        time: new Date().toLocaleString()
-      };
-
-      await addDoc(collection(db, "diaryEntries"), replyEntry);
-    }
-
     function renderEntry(id, entry) {
       const entryDiv = document.createElement('div');
       entryDiv.className = 'entry';
@@ -258,20 +222,10 @@
       const senderName = entry.sender === 'girl' ? 'Jeah 💖' : 'Dave 💙';
 
       let content = `<strong>${entry.title}</strong> <span class="category-badge ${categoryClass}">${entry.category}</span><p>${entry.text}</p><small>${senderName} • ${entry.time}</small>`;
-      if (entry.image) content += `<br><img src="${entry.image}" alt="Attached">`;
-      content += `<br><button onclick="editEntry('${id}')">Edit</button>
-                  <button onclick="deleteEntry('${id}')">Delete</button>
-                  <button onclick="replyToEntry('${id}')">Reply</button>`;
+      content += `<br><button>Edit</button> <button>Delete</button> <button>Reply</button>`;
 
       entryDiv.innerHTML = content;
       return entryDiv;
-    }
-
-    function addToPhotoDump(imageDataUrl) {
-      const photoDumpContainer = document.getElementById('photoDump');
-      const img = document.createElement('img');
-      img.src = imageDataUrl;
-      photoDumpContainer.appendChild(img);
     }
 
     loadEntries();
