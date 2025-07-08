@@ -96,6 +96,20 @@
       cursor: pointer;
     }
 
+    #passwordOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #fff8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 9999;
+    }
+
     @media (max-width: 600px) {
       .diary-form, .entries, .photo-dump {
         padding: 10px;
@@ -104,6 +118,12 @@
   </style>
 </head>
 <body>
+
+  <div id="passwordOverlay">
+    <h2>🔐 Enter Shared Password</h2>
+    <input type="password" id="sharedPasswordInput" placeholder="Password">
+    <button onclick="checkPassword()">Enter</button>
+  </div>
 
   <header>
     💖 Unspoken Hearts 💖
@@ -151,6 +171,17 @@
       messagingSenderId: "885095961873",
       appId: "1:885095961873:web:4b4c846cc2b28dbce928b0"
     };
+
+    const SHARED_PASSWORD = "unspoken2024";
+
+    function checkPassword() {
+      const entered = document.getElementById('sharedPasswordInput').value.trim();
+      if (entered === SHARED_PASSWORD) {
+        document.getElementById('passwordOverlay').style.display = 'none';
+      } else {
+        alert('Incorrect password. Try again.');
+      }
+    }
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
