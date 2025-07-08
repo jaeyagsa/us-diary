@@ -1,169 +1,253 @@
-<!-- Shared Diary Complete with All Features Using Local Storage and Dropdown Sender -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unspoken Hearts Diary</title>
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background-color: #fff8f0;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
 
-<!-- EmailJS SDK -->
-<script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
-<script type="text/javascript">
-(function() {
-  emailjs.init('QuFveASS-r2Favhcs');
-})();
+    header {
+      text-align: center;
+      font-size: 24px;
+      color: #f4978e;
+      margin-bottom: 20px;
+    }
 
-function sendMood(mood) {
-  const templateParams = {
-    mood: mood
-  };
+    .diary-form {
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin: 0 auto 20px;
+    }
 
-  emailjs.send('service_g01f5f1', 'template_vzvlohc', templateParams)
-    .then(function(response) {
-       alert("Your partner has been notified: " + mood);
-    }, function(error) {
-       alert("Failed to send mood. Please try again.");
-    });
-}
+    .diary-form input, .diary-form select, .diary-form textarea, .diary-form button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
 
-function addEntry() {
-  const title = document.getElementById("entryTitle").value.trim();
-  const text = document.getElementById("entryText").value.trim();
-  const sender = document.getElementById("entrySender").value;
-  const imageInput = document.getElementById("entryImage");
+    .entries {
+      max-width: 600px;
+      margin: 0 auto;
+    }
 
-  if (!title || !text) {
-    alert("Please fill in both title and text.");
-    return;
-  }
+    .entry {
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+    }
 
-  const reader = new FileReader();
-  const file = imageInput.files[0];
-  reader.onload = function(e) {
-    const imageUrl = file ? e.target.result : "";
+    .entry img {
+      max-width: 100%;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
 
-    const newEntry = {
-      id: Date.now(),
-      title: title,
-      text: text,
-      sender: sender,
-      image: imageUrl,
-      time: new Date().toLocaleString()
-    };
+    .photo-dump {
+      max-width: 600px;
+      margin: 30px auto;
+      text-align: center;
+    }
 
-    const entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
-    entries.unshift(newEntry);
-    localStorage.setItem('diaryEntries', JSON.stringify(entries));
+    .photo-dump img {
+      width: 80px;
+      margin: 5px;
+      border-radius: 6px;
+    }
 
-    if (imageUrl) addToPhotoDump(imageUrl);
+    .mood-buttons {
+      text-align: center;
+      margin-top: 20px;
+    }
 
-    document.getElementById("entryTitle").value = "";
-    document.getElementById("entryText").value = "";
-    document.getElementById("entryImage").value = "";
+    .mood-buttons button {
+      margin: 5px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      background-color: #f4978e;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
 
-    loadEntries();
-  };
+  <header>
+    💖 Unspoken Hearts 💖
+  </header>
 
-  if (file) {
-    reader.readAsDataURL(file);
-  } else {
-    reader.onload();
-  }
-}
+  <div class="diary-form">
+    <select id="entrySender">
+      <option value="girl">Girl 💖</option>
+      <option value="boy">Boy 💙</option>
+    </select>
+    <input type="text" id="entryTitle" placeholder="Title">
+    <textarea id="entryText" rows="4" placeholder="Your thoughts..."></textarea>
+    <input type="file" id="entryImage">
+    <button onclick="addEntry()">Post Entry</button>
+  </div>
 
-function loadEntries() {
-  const entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
-  const container = document.getElementById("entriesContainer");
-  container.innerHTML = "";
-  entries.forEach(entry => {
-    const div = renderEntry(entry);
-    container.appendChild(div);
-  });
-}
+  <div class="entries" id="entriesContainer"></div>
 
-function editEntry(id) {
-  const entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
-  const entry = entries.find(e => e.id === id);
-  if (!entry) return;
+  <div class="photo-dump" id="photoDump"></div>
 
-  const newTitle = prompt("Edit Title", entry.title);
-  const newText = prompt("Edit Text", entry.text);
-  if (newTitle && newText) {
-    entry.title = newTitle;
-    entry.text = newText;
-    localStorage.setItem('diaryEntries', JSON.stringify(entries));
-    loadEntries();
-  }
-}
+  <div class="mood-buttons">
+    <button onclick="sendMood('Happy 😊')">😊 Happy</button>
+    <button onclick="sendMood('Sad 😢')">😢 Sad</button>
+    <button onclick="sendMood('Excited 😍')">😍 Excited</button>
+  </div>
 
-function deleteEntry(id) {
-  let entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
-  entries = entries.filter(e => e.id !== id);
-  localStorage.setItem('diaryEntries', JSON.stringify(entries));
-  loadEntries();
-}
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <script>
+    (function() {
+      emailjs.init('QuFveASS-r2Favhcs');
+    })();
 
-function replyToEntry(parentId) {
-  const replyText = prompt("Your reply:");
-  const sender = document.getElementById("entrySender").value;
-  if (!replyText) return;
+    function sendMood(mood) {
+      const templateParams = { mood: mood };
+      emailjs.send('service_g01f5f1', 'template_vzvlohc', templateParams)
+        .then(() => alert("Your partner has been notified: " + mood))
+        .catch(() => alert("Failed to send mood."));
+    }
 
-  const replyEntry = {
-    id: Date.now(),
-    title: "Reply",
-    text: replyText,
-    sender: sender,
-    image: "",
-    time: new Date().toLocaleString()
-  };
+    function addEntry() {
+      const title = document.getElementById("entryTitle").value.trim();
+      const text = document.getElementById("entryText").value.trim();
+      const sender = document.getElementById("entrySender").value;
+      const imageInput = document.getElementById("entryImage");
 
-  const entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
-  const index = entries.findIndex(e => e.id === parentId);
-  if (index !== -1) {
-    entries.splice(index + 1, 0, replyEntry);
-    localStorage.setItem('diaryEntries', JSON.stringify(entries));
-    loadEntries();
-  }
-}
+      if (!title || !text) {
+        alert("Please fill in both title and text.");
+        return;
+      }
 
-function renderEntry(entry) {
-  const entryDiv = document.createElement('div');
-  entryDiv.style.padding = '10px';
-  entryDiv.style.margin = '10px 0';
-  entryDiv.style.borderRadius = '10px';
-  entryDiv.style.backgroundColor = entry.sender === 'girl' ? '#ffe6e6' : '#e6f0ff';
+      const reader = new FileReader();
+      const file = imageInput.files[0];
+      reader.onload = function(e) {
+        const imageUrl = file ? e.target.result : "";
 
-  let content = `<strong>${entry.title}</strong><p>${entry.text}</p><small>${entry.time}</small>`;
-  if (entry.image) content += `<br><img src="${entry.image}" style="max-width:100px; margin-top:10px;">`;
-  content += `<br><button onclick="editEntry(${entry.id})">Edit</button>
-              <button onclick="deleteEntry(${entry.id})">Delete</button>
-              <button onclick="replyToEntry(${entry.id})">Reply</button>`;
+        const newEntry = {
+          id: Date.now(),
+          title,
+          text,
+          sender,
+          image: imageUrl,
+          time: new Date().toLocaleString()
+        };
 
-  entryDiv.innerHTML = content;
-  return entryDiv;
-}
+        const entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
+        entries.unshift(newEntry);
+        localStorage.setItem('diaryEntries', JSON.stringify(entries));
 
-function addToPhotoDump(imageDataUrl) {
-  const photoDumpContainer = document.getElementById('photoDump');
-  const img = document.createElement('img');
-  img.src = imageDataUrl;
-  img.style.maxWidth = '100px';
-  img.style.margin = '5px';
-  photoDumpContainer.appendChild(img);
-}
+        if (imageUrl) addToPhotoDump(imageUrl);
 
-window.onload = loadEntries;
-</script>
+        document.getElementById("entryTitle").value = "";
+        document.getElementById("entryText").value = "";
+        document.getElementById("entryImage").value = "";
 
-<!-- Add these elements in your HTML body -->
-<div>
-  <select id="entrySender">
-    <option value="girl">Girl 💖</option>
-    <option value="boy">Boy 💙</option>
-  </select>
-  <input type="text" id="entryTitle" placeholder="Title">
-  <textarea id="entryText" placeholder="Your thoughts..."></textarea>
-  <input type="file" id="entryImage">
-  <button onclick="addEntry()">Post</button>
-</div>
+        loadEntries();
+      };
 
-<div id="entriesContainer"></div>
-<div id="photoDump"></div>
+      if (file) {
+        reader.readAsDataURL(file);
+      } else {
+        reader.onload();
+      }
+    }
 
-<button onclick="sendMood('Happy 😊')">😊 Happy</button>
-<button onclick="sendMood('Sad 😢')">😢 Sad</button>
-<button onclick="sendMood('Excited 😍')">😍 Excited</button>
+    function loadEntries() {
+      const entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
+      const container = document.getElementById("entriesContainer");
+      container.innerHTML = "";
+      entries.forEach(entry => {
+        const div = renderEntry(entry);
+        container.appendChild(div);
+      });
+    }
+
+    function editEntry(id) {
+      const entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
+      const entry = entries.find(e => e.id === id);
+      if (!entry) return;
+
+      const newTitle = prompt("Edit Title", entry.title);
+      const newText = prompt("Edit Text", entry.text);
+      if (newTitle && newText) {
+        entry.title = newTitle;
+        entry.text = newText;
+        localStorage.setItem('diaryEntries', JSON.stringify(entries));
+        loadEntries();
+      }
+    }
+
+    function deleteEntry(id) {
+      let entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
+      entries = entries.filter(e => e.id !== id);
+      localStorage.setItem('diaryEntries', JSON.stringify(entries));
+      loadEntries();
+    }
+
+    function replyToEntry(parentId) {
+      const replyText = prompt("Your reply:");
+      const sender = document.getElementById("entrySender").value;
+      if (!replyText) return;
+
+      const replyEntry = {
+        id: Date.now(),
+        title: "Reply",
+        text: replyText,
+        sender,
+        image: "",
+        time: new Date().toLocaleString()
+      };
+
+      const entries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
+      const index = entries.findIndex(e => e.id === parentId);
+      if (index !== -1) {
+        entries.splice(index + 1, 0, replyEntry);
+        localStorage.setItem('diaryEntries', JSON.stringify(entries));
+        loadEntries();
+      }
+    }
+
+    function renderEntry(entry) {
+      const entryDiv = document.createElement('div');
+      entryDiv.className = 'entry';
+      entryDiv.style.backgroundColor = entry.sender === 'girl' ? '#ffe6e6' : '#e6f0ff';
+
+      let content = `<strong>${entry.title}</strong><p>${entry.text}</p><small>${entry.time}</small>`;
+      if (entry.image) content += `<br><img src="${entry.image}" alt="Attached">`;
+      content += `<br><button onclick="editEntry(${entry.id})">Edit</button>
+                  <button onclick="deleteEntry(${entry.id})">Delete</button>
+                  <button onclick="replyToEntry(${entry.id})">Reply</button>`;
+
+      entryDiv.innerHTML = content;
+      return entryDiv;
+    }
+
+    function addToPhotoDump(imageDataUrl) {
+      const photoDumpContainer = document.getElementById('photoDump');
+      const img = document.createElement('img');
+      img.src = imageDataUrl;
+      photoDumpContainer.appendChild(img);
+    }
+
+    window.onload = loadEntries;
+
+  </script>
+
+</body>
+</html>
