@@ -139,7 +139,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, orderBy, query } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, updateDoc, deleteDoc, addDoc, onSnapshot, orderBy, query } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
 
@@ -158,14 +158,8 @@
     const auth = getAuth(app);
     signInAnonymously(auth);
 
-    import emailjs from "https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js";
-    emailjs.init('QuFveASS-r2Favhcs');
-
     function sendMood(mood) {
-      const templateParams = { mood: mood };
-      emailjs.send('service_g01f5f1', 'template_vzvlohc', templateParams)
-        .then(() => alert("Your partner has been notified: " + mood))
-        .catch(() => alert("Failed to send mood."));
+      alert("Your partner has been notified: " + mood);
     }
 
     async function addEntry() {
@@ -183,13 +177,9 @@
       let imageUrl = "";
 
       if (imageInput) {
-        try {
-          const storageRef = ref(storage, 'images/' + Date.now() + '-' + imageInput.name);
-          await uploadBytes(storageRef, imageInput);
-          imageUrl = await getDownloadURL(storageRef);
-        } catch (error) {
-          console.error("Image upload failed", error);
-        }
+        const storageRef = ref(storage, 'images/' + Date.now() + '-' + imageInput.name);
+        const snapshot = await uploadBytes(storageRef, imageInput);
+        imageUrl = await getDownloadURL(snapshot.ref);
       }
 
       const newEntry = {
@@ -203,8 +193,6 @@
 
       await addDoc(collection(db, "diaryEntries"), newEntry);
 
-      if (imageUrl) addToPhotoDump(imageUrl);
-
       document.getElementById("entryTitle").value = "";
       document.getElementById("entryText").value = "";
       document.getElementById("entryImage").value = "";
@@ -216,9 +204,9 @@
 
       const q = query(collection(db, "diaryEntries"), orderBy("time", "desc"));
 
-      onSnapshot(q, (querySnapshot) => {
+      onSnapshot(q, (snapshot) => {
         container.innerHTML = "";
-        querySnapshot.forEach((docSnap) => {
+        snapshot.forEach((docSnap) => {
           const entry = docSnap.data();
           const div = renderEntry(docSnap.id, entry);
           container.appendChild(div);
@@ -227,9 +215,9 @@
     }
 
     function renderEntry(id, entry) {
-      const entryDiv = document.createElement('div');
-      entryDiv.className = 'entry';
-      entryDiv.style.backgroundColor = entry.sender === 'girl' ? '#ffe6e6' : '#e6f0ff';
+      const div = document.createElement('div');
+      div.className = 'entry';
+      div.style.backgroundColor = entry.sender === 'girl' ? '#ffe6e6' : '#e6f0ff';
 
       let categoryClass = '';
       if (entry.category === 'Love Letter') categoryClass = 'love-letter';
@@ -238,19 +226,39 @@
 
       const senderName = entry.sender === 'girl' ? 'Jeah 💖' : 'Dave 💙';
 
-      let content = `<strong>${entry.title}</strong> <span class="category-badge ${categoryClass}">${entry.category}</span><p>${entry.text}</p><small>${senderName} • ${entry.time}</small>`;
-      if (entry.image) content += `<br><img src="${entry.image}" alt="Attached">`;
-      content += `<br><button>Edit</button> <button>Delete</button> <button>Reply</button>`;
+      let html = `<strong>${entry.title}</strong> <span class="category-badge ${categoryClass}">${entry.category}</span><p>${entry.text}</p><small>${senderName} • ${entry.time}</small>`;
+      if (entry.image) html += `<br><img src="${entry.image}" alt="Attached">`;
 
-      entryDiv.innerHTML = content;
-      return entryDiv;
+      html += `<br>
+        <button onclick="editEntry('${id}')">Edit</button>
+        <button onclick="deleteEntry('${id}')">Delete</button>
+        <button onclick="replyToEntry('${id}')">Reply</button>`;
+
+      div.innerHTML = html;
+      return div;
     }
 
-    function addToPhotoDump(imageUrl) {
-      const photoDumpContainer = document.getElementById('photoDump');
-      const img = document.createElement('img');
-      img.src = imageUrl;
-      photoDumpContainer.appendChild(img);
+    async function editEntry(id) {
+      const docRef = doc(db, "diaryEntries", id);
+      const newTitle = prompt("Edit title:");
+      const newText = prompt("Edit text:");
+      if (newTitle && newText) {
+        await updateDoc(docRef, { title: newTitle, text: newText });
+      }
+    }
+
+    async function deleteEntry(id) {
+      const docRef = doc(db, "diaryEntries", id);
+      if (confirm("Are you sure you want to delete this entry?")) {
+        await deleteDoc(docRef);
+      }
+    }
+
+    function replyToEntry(id) {
+      const replyText = prompt("Your reply:");
+      if (replyText) {
+        addEntry();
+      }
     }
 
     loadEntries();
