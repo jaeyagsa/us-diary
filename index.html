@@ -55,6 +55,20 @@
       border-radius: 8px;
     }
 
+    .category-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      color: white;
+      margin-left: 8px;
+    }
+
+    .love-letter { background-color: #f4978e; }
+    .unsaid-thoughts { background-color: #fbc687; }
+    .rants { background-color: #a29bfe; }
+
     .photo-dump {
       max-width: 600px;
       margin: 30px auto;
@@ -91,8 +105,8 @@
 
   <div class="diary-form">
     <select id="entrySender">
-      <option value="girl">Girl 💖</option>
-      <option value="boy">Boy 💙</option>
+      <option value="girl">Jeah 💖</option>
+      <option value="boy">Dave 💙</option>
     </select>
 
     <select id="entryCategory">
@@ -236,7 +250,14 @@
       entryDiv.className = 'entry';
       entryDiv.style.backgroundColor = entry.sender === 'girl' ? '#ffe6e6' : '#e6f0ff';
 
-      let content = `<strong>${entry.title}</strong> <em>(${entry.category})</em><p>${entry.text}</p><small>${entry.time}</small>`;
+      let categoryClass = '';
+      if (entry.category === 'Love Letter') categoryClass = 'love-letter';
+      else if (entry.category === 'Unsaid Thoughts') categoryClass = 'unsaid-thoughts';
+      else if (entry.category === 'Rants') categoryClass = 'rants';
+
+      const senderName = entry.sender === 'girl' ? 'Jeah 💖' : 'Dave 💙';
+
+      let content = `<strong>${entry.title}</strong> <span class="category-badge ${categoryClass}">${entry.category}</span><p>${entry.text}</p><small>${senderName} • ${entry.time}</small>`;
       if (entry.image) content += `<br><img src="${entry.image}" alt="Attached">`;
       content += `<br><button onclick="editEntry('${id}')">Edit</button>
                   <button onclick="deleteEntry('${id}')">Delete</button>
