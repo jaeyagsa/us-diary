@@ -183,6 +183,10 @@
 
   const PASSWORD = 'usdiary2025';
 
+  if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark-mode');
+  }
+
   function checkPassword() {
     const input = document.getElementById('passwordInput').value;
     if(input === PASSWORD) document.querySelector('.password-screen').style.display = 'none';
@@ -191,6 +195,7 @@
 
   function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
+    localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
   }
 
   function submitEntry() {
@@ -229,6 +234,11 @@
       container.innerHTML = '';
       const dump = document.getElementById('photoDump');
       dump.innerHTML = '';
+
+      if (snapshot.empty) {
+        container.innerHTML = '<p style="text-align:center;opacity:0.6;">No entries yet.</p>';
+        return;
+      }
 
       snapshot.forEach(doc => {
         const data = doc.data();
