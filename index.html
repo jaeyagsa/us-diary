@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -73,6 +73,17 @@
 <!-- ... -->
 
 <script>
+const PASSWORD = 'usdiary2025';
+
+function checkPassword() {
+  const input = document.getElementById('passwordInput').value;
+  if (input === PASSWORD) {
+    document.querySelector('.password-screen').style.display = 'none';
+  } else {
+    alert('Incorrect password');
+  }
+}
+
 function switchTheme(theme) {
   document.body.className = document.body.className.replace(/theme-\w+/g, '').trim();
   if (theme) document.body.classList.add(theme);
