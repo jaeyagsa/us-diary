@@ -21,7 +21,20 @@
     h2 { text-align: center; color: #ff69b4; animation: fadeIn 1s ease; }
     textarea, input[type="file"], select, button { width: 100%; padding: 10px; margin-top: 10px; border-radius: 12px; border: 1px solid #ccc; box-sizing: border-box; font-family: 'Quicksand', sans-serif; transition: transform 0.2s; }
     button:hover { background-color: #ff69b4; transform: scale(1.05); }
-    .password-screen { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #fff0f5; position: fixed; width: 100%; top: 0; left: 0; z-index: 1000; animation: fadeIn 1s ease; }
+    .password-screen {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #fff0f5;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      animation: fadeIn 1s ease;
+      transition: opacity 0.5s ease;
+    }
     .diary-entry { background: #fffafc; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); padding: 15px; margin-bottom: 15px; animation: fadeInEntry 0.5s ease; }
     .diary-entry.red { background-color: #ffe6f0; }
     .diary-entry.blue { background-color: #e6f7ff; }
@@ -54,6 +67,7 @@
 
 <h1>💌 Unspoken Hearts</h1>
 <button onclick="toggleDarkMode()">Toggle Dark/Light Mode</button>
+<button onclick="logout()">Log out</button>
 
 <div>
   <select id="entrySender">
@@ -105,12 +119,39 @@
   emailjs.init('QuFveASS-r2Favhcs');
   const PASSWORD = 'usdiary2025';
 
-  if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
+  if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark');
+  }
 
   function checkPassword() {
     const input = document.getElementById('passwordInput').value;
-    if(input === PASSWORD) document.querySelector('.password-screen').style.display = 'none';
-    else alert('Incorrect password');
+    if (input === PASSWORD) {
+      localStorage.setItem('usDiaryAccess', 'granted');
+      const screen = document.querySelector('.password-screen');
+      screen.style.opacity = '0';
+      setTimeout(() => screen.style.display = 'none', 500);
+    } else {
+      alert('Incorrect password');
+    }
+  }
+
+  // Enter key support
+  document.getElementById('passwordInput').addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') {
+      checkPassword();
+    }
+  });
+
+  // Skip password screen if already granted
+  window.addEventListener('load', () => {
+    if (localStorage.getItem('usDiaryAccess') === 'granted') {
+      document.querySelector('.password-screen').style.display = 'none';
+    }
+  });
+
+  function logout() {
+    localStorage.removeItem('usDiaryAccess');
+    location.reload();
   }
 
   function toggleDarkMode() {
@@ -131,7 +172,7 @@
 
     const entryData = { text, sender, category, font, timestamp: Date.now(), replies: [] };
 
-    if(file) {
+    if (file) {
       uploadingStatus.style.display = 'block';
       const storageRef = storage.ref().child('images/' + Date.now() + '_' + file.name);
 
@@ -169,7 +210,7 @@
 
       snapshot.forEach(doc => {
         const data = doc.data();
-        if(selectedCategory !== 'All' && data.category !== selectedCategory) return;
+        if (selectedCategory !== 'All' && data.category !== selectedCategory) return;
 
         const div = document.createElement('div');
         div.className = 'diary-entry ' + data.sender;
@@ -198,7 +239,7 @@
 
         container.appendChild(div);
 
-        if(data.image) {
+        if (data.image) {
           const img = document.createElement('img');
           img.src = data.image;
           dump.appendChild(img);
@@ -210,7 +251,7 @@
   function addReply(id) {
     const replyInput = document.getElementById(`reply-${id}`);
     const replyText = replyInput.value;
-    if(!replyText.trim()) return;
+    if (!replyText.trim()) return;
 
     const replyWithTime = { text: replyText, timestamp: Date.now() };
 
@@ -224,7 +265,7 @@
   function deleteReply(entryId, replyIndex) {
     const entryRef = db.collection('entries').doc(entryId);
     entryRef.get().then(doc => {
-      if(doc.exists) {
+      if (doc.exists) {
         const data = doc.data();
         data.replies.splice(replyIndex, 1);
         entryRef.update({ replies: data.replies });
@@ -233,7 +274,7 @@
   }
 
   function deleteEntry(id) {
-    if(confirm('Delete this entry?')) db.collection('entries').doc(id).delete();
+    if (confirm('Delete this entry?')) db.collection('entries').doc(id).delete();
   }
 
   function sendMood(mood) {
@@ -241,7 +282,7 @@
       to_email: 'kaito2epic@gmail.com',
       mood: mood
     }).then(() => alert('Mood sent!'))
-    .catch(() => alert('Failed to send mood.'));
+      .catch(() => alert('Failed to send mood.'));
   }
 
   function createFloatingHearts() {
