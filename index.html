@@ -2,13 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>💌 Unspoken Hearts</title>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2.6.4/dist/email.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
+    * {
+      transition: background-color 0.3s, color 0.3s;
+    }
     body {
       font-family: 'Quicksand', sans-serif;
       background-color: #fff0f5;
@@ -16,262 +19,197 @@
       padding: 20px;
       max-width: 800px;
       margin: auto;
-      animation: fadeInBody 1s ease;
       overflow-x: hidden;
       position: relative;
     }
-    body.dark { background-color: #1e1e1e; color: #e0e0e0; }
-    @keyframes fadeInBody { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes bounceIn { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
-    @keyframes fadeInEntry { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes floatHeart { 0% { transform: translateY(0) scale(1.2); opacity: 0.8; } 50% { transform: translateY(-300px) scale(1.5); opacity: 0.4; } 100% { transform: translateY(-600px) scale(1); opacity: 0; } }
-    h1 { text-align: center; font-size: 40px; font-family: 'Pacifico', cursive; color: #ff69b4; animation: bounceIn 1s ease; }
-    h2 { text-align: center; color: #ff69b4; }
-    textarea, input[type="file"], select, button {
-      width: 100%; padding: 10px; margin-top: 10px; border-radius: 12px; border: 1px solid #ccc; box-sizing: border-box;
+    body.dark {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
     }
-    button:hover { background-color: #ff69b4; transform: scale(1.05); }
-    .password-screen {
-      display: flex; justify-content: center; align-items: center; height: 100vh;
-      background-color: #fff0f5; position: fixed; width: 100%; top: 0; left: 0; z-index: 1000;
+    h1 {
+      text-align: center;
+      font-size: 40px;
+      font-family: 'Pacifico', cursive;
+      color: #ff69b4;
     }
-    .diary-entry { background: #fffafc; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); padding: 15px; margin-bottom: 15px; animation: fadeInEntry 0.5s ease; }
-    .diary-entry.red { background-color: #ffe6f0; }
-    .diary-entry.blue { background-color: #e6f7ff; }
-    .diary-entry img { max-width: 100%; border-radius: 12px; margin-top: 10px; }
-    .reply { margin-top: 15px; background: #f9f9f9; border-radius: 10px; padding: 10px; }
-    .photo-dump { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-    .photo-dump img { max-width: 100px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .mood-buttons { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
-    .uploading { text-align: center; font-size: 14px; color: #ff69b4; margin-top: 5px; display: none; }
-    .heart { position: absolute; width: 20px; height: 20px; background: pink; border-radius: 50%; animation: floatHeart 8s linear infinite; }
+    .diary-entry {
+      background: #fffafc;
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    body.dark .diary-entry { background-color: #2a2a2a; color: #e0e0e0; }
+    textarea, input, select, button {
+      width: 100%; padding: 10px; margin-top: 10px; border-radius: 12px; box-sizing: border-box;
+    }
+    body.dark textarea, body.dark input, body.dark select {
+      background-color: #333; color: white; border: 1px solid #666;
+    }
+    button:hover { background-color: #ff69b4; color: white; cursor: pointer; }
+    #darkToggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #ff69b4;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      z-index: 9999;
+    }
+    #scrollTopBtn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #ff69b4;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 24px;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
   </style>
 </head>
 <body>
-<div class="floating-hearts"></div>
-<div class="password-screen">
-  <div>
-    <h2>Enter Shared Password</h2>
-    <input type="password" id="passwordInput" placeholder="Password">
-    <button onclick="checkPassword()">Enter</button>
-  </div>
-</div>
+  <h1>💌 Unspoken Hearts</h1>
+  <button id="darkToggle" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+  <button id="scrollTopBtn" onclick="scrollToTop()">🔼</button>
 
-<h1>💌 Unspoken Hearts</h1>
-<button onclick="toggleDarkMode()">Toggle Dark/Light Mode</button>
-<div>
-  <select id="entrySender">
-    <option value="red">Jeah</option>
-    <option value="blue">Dave</option>
+  <label for="fontSize">Font Size:</label>
+  <select id="fontSize" onchange="changeFontSize()">
+    <option value="small">Small</option>
+    <option value="medium" selected>Medium</option>
+    <option value="large">Large</option>
   </select>
-  <select id="entryCategory">
-    <option value="Love Letter">Love Letter</option>
-    <option value="Unsaid Thoughts">Unsaid Thoughts</option>
-    <option value="Rants">Rants</option>
-  </select>
-  <select id="fontSelector">
-    <option value="Arial, sans-serif">Arial</option>
-    <option value="Georgia, serif">Georgia</option>
-    <option value="Courier New, monospace">Courier New</option>
-    <option value="Times New Roman, serif">Times New Roman</option>
-  </select>
+
   <textarea id="entryText" placeholder="Write something..."></textarea>
   <input type="file" id="entryImage" accept="image/*">
   <button onclick="submitEntry()">Submit</button>
-  <div class="uploading" id="uploadingStatus">Uploading image...</div>
-</div>
-<div class="mood-buttons">
-  <button onclick="sendMood('happy')">😊</button>
-  <button onclick="sendMood('sad')">😢</button>
-  <button onclick="sendMood('love')">❤️</button>
-</div>
 
-<h2>Filter by Category</h2>
-<select id="filterCategory" onchange="loadEntries()">
-  <option value="All">All</option>
-  <option value="Love Letter">Love Letter</option>
-  <option value="Unsaid Thoughts">Unsaid Thoughts</option>
-  <option value="Rants">Rants</option>
-</select>
+  <div id="entries"></div>
 
-<h2>Diary Entries</h2>
-<div id="entries"></div>
+  <script>
+    const PASSWORD = "usdiary2025";
+    const IMAGEBB_API_KEY = "1466e5972116e365b26ad42b2679d379";
 
-<h2>Photo Dump</h2>
-<div class="photo-dump" id="photoDump"></div>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtHj92IVoxoyz2EtMVaaHVKyPP7UHDpEU",
+      authDomain: "unspoken-hearts-diary.firebaseapp.com",
+      projectId: "unspoken-hearts-diary"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-<div id="toast" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #ff69b4; color: white; padding: 10px 20px; border-radius: 20px; display: none; font-family: 'Quicksand', sans-serif; z-index: 9999;"></div>
+    const entryText = document.getElementById("entryText");
+    const entryImage = document.getElementById("entryImage");
+    const entriesContainer = document.getElementById("entries");
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyDtHj92IVoxoyz2EtMVaaHVKyPP7UHDpEU",
-    authDomain: "unspoken-hearts-diary.firebaseapp.com",
-    projectId: "unspoken-hearts-diary"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  emailjs.init('QuFveASS-r2Favhcs');
-  const PASSWORD = 'usdiary2025';
-
-  if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
-
-  function checkPassword() {
-    const input = document.getElementById('passwordInput').value;
-    if(input === PASSWORD) document.querySelector('.password-screen').style.display = 'none';
-    else showToast('Incorrect password');
-  }
-
-  function toggleDarkMode() {
-    document.body.classList.toggle('dark');
-    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
-  }
-
-  function submitEntry() {
-    const text = document.getElementById('entryText').value.trim();
-    const sender = document.getElementById('entrySender').value;
-    const category = document.getElementById('entryCategory').value;
-    const font = document.getElementById('fontSelector').value;
-    const fileInput = document.getElementById('entryImage');
-    const file = fileInput.files[0];
-    const uploadingStatus = document.getElementById('uploadingStatus');
-
-    if (!text && !file) {
-      showToast('Please write something or attach an image.');
-      return;
+    function toggleDarkMode() {
+      const isDark = document.body.classList.toggle("dark");
+      localStorage.setItem("darkMode", isDark);
+      document.getElementById("darkToggle").innerText = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
     }
 
-    const entryData = { text, sender, category, font, timestamp: Date.now(), replies: [], password: PASSWORD };
+    if (localStorage.getItem("darkMode") === "true" ||
+       (!localStorage.getItem("darkMode") && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+      document.body.classList.add("dark");
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+      const isDark = document.body.classList.contains("dark");
+      document.getElementById("darkToggle").innerText = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
+      loadEntries();
+    });
 
-    if (file) {
-      uploadingStatus.style.display = 'block';
-      const reader = new FileReader();
-      reader.onload = function () {
-        const base64Image = reader.result.split(',')[1];
-        fetch("https://api.imgbb.com/1/upload?key=1466e5972116e365b26ad42b2679d379", {
-          method: "POST",
-          body: new URLSearchParams({ image: base64Image })
-        })
-        .then(res => res.json())
-        .then(data => {
-          entryData.image = data.data.url;
-          saveEntry(entryData);
-          uploadingStatus.style.display = 'none';
-          resetForm();
-        })
-        .catch(() => {
-          uploadingStatus.style.display = 'none';
-          showToast('Image upload failed.');
-        });
+    window.onscroll = () => {
+      document.getElementById("scrollTopBtn").style.display = window.scrollY > 100 ? "flex" : "none";
+    }
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function changeFontSize() {
+      const size = document.getElementById("fontSize").value;
+      if (size === "small") entryText.style.fontSize = "14px";
+      else if (size === "medium") entryText.style.fontSize = "16px";
+      else if (size === "large") entryText.style.fontSize = "18px";
+      localStorage.setItem("fontSize", size);
+    }
+
+    entryText.addEventListener("input", () => {
+      localStorage.setItem("draftText", entryText.value);
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const savedDraft = localStorage.getItem("draftText");
+      if (savedDraft) entryText.value = savedDraft;
+      const savedSize = localStorage.getItem("fontSize") || "medium";
+      document.getElementById("fontSize").value = savedSize;
+      changeFontSize();
+    });
+
+    function submitEntry() {
+      const text = entryText.value.trim();
+      const file = entryImage.files[0];
+      if (!text && !file) return alert("Please write something or add an image.");
+
+      const entryData = {
+        text,
+        timestamp: Date.now(),
+        password: PASSWORD
       };
-      reader.readAsDataURL(file);
-    } else {
-      saveEntry(entryData);
-      resetForm();
-    }
-  }
 
-  function resetForm() {
-    document.getElementById('entryText').value = '';
-    document.getElementById('entryImage').value = '';
-    document.getElementById('uploadingStatus').style.display = 'none';
-    loadEntries();
-    showToast('Entry uploaded!');
-  }
-
-  function saveEntry(data) {
-    db.collection('entries').add(data);
-  }
-
-  function loadEntries() {
-    const selectedCategory = document.getElementById('filterCategory').value;
-    db.collection('entries').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
-      const container = document.getElementById('entries');
-      container.innerHTML = '';
-      const dump = document.getElementById('photoDump');
-      dump.innerHTML = '';
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        if (data.password !== PASSWORD) return;
-        if (selectedCategory !== 'All' && data.category !== selectedCategory) return;
-        const div = document.createElement('div');
-        div.className = 'diary-entry ' + data.sender;
-        div.style.fontFamily = data.font || 'Arial, sans-serif';
-        const timeString = new Date(data.timestamp).toLocaleString();
-        let repliesHTML = '';
-        (data.replies || []).forEach((r, idx) => {
-          const replyTime = new Date(r.timestamp).toLocaleString();
-          repliesHTML += `<p>${r.text}<br><small style="font-size:0.75em;color:gray;">${replyTime}</small> <button onclick="deleteReply('${doc.id}', ${idx})">🗑️</button></p>`;
-        });
-        div.innerHTML = `<strong>Category: ${data.category || 'General'}</strong><br><small>${timeString}</small><p>${data.text || ''}</p>${data.image ? `<img src="${data.image}" alt="Attached Image">` : ''}<div class="reply">${repliesHTML}<input type="text" placeholder="Reply..." id="reply-${doc.id}"><button onclick="addReply('${doc.id}')">↩️</button><button onclick="deleteEntry('${doc.id}')">🗑️</button></div>`;
-        container.appendChild(div);
-        if (data.image) {
-          const img = document.createElement('img');
-          img.src = data.image;
-          dump.appendChild(img);
-        }
-      });
-    });
-  }
-
-  function deleteEntry(id) {
-    if (confirm('Are you sure you want to permanently delete this entry?')) {
-      db.collection('entries').doc(id).delete().then(() => {
-        showToast('Entry deleted!');
-        loadEntries();
-      }).catch(() => showToast('Failed to delete.'));
-    }
-  }
-
-  function addReply(id) {
-    const replyInput = document.getElementById(`reply-${id}`);
-    const replyText = replyInput.value.trim();
-    if (!replyText) return;
-    const replyWithTime = { text: replyText, timestamp: Date.now() };
-    db.collection('entries').doc(id).update({
-      replies: firebase.firestore.FieldValue.arrayUnion(replyWithTime)
-    }).then(() => { replyInput.value = ''; });
-  }
-
-  function deleteReply(entryId, replyIndex) {
-    const entryRef = db.collection('entries').doc(entryId);
-    entryRef.get().then(doc => {
-      if(doc.exists) {
-        const data = doc.data();
-        const replies = data.replies || [];
-        replies.splice(replyIndex, 1);
-        entryRef.update({ replies: replies });
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function () {
+          const base64 = reader.result.split(",")[1];
+          fetch(`https://api.imgbb.com/1/upload?key=${IMAGEBB_API_KEY}`, {
+            method: "POST",
+            body: new URLSearchParams({ image: base64 })
+          })
+            .then(res => res.json())
+            .then(data => {
+              entryData.image = data.data.url;
+              saveEntry(entryData);
+            });
+        };
+        reader.readAsDataURL(file);
+      } else {
+        saveEntry(entryData);
       }
-    });
-  }
+    }
 
-  function sendMood(mood) {
-    const templateParams = { to_email: 'kaito2epic@gmail.com', mood: mood };
-    emailjs.send('service_g01f5f1', 'template_vzvlohc', templateParams)
-      .then(() => showToast('Mood sent!'))
-      .catch(() => showToast('Failed to send mood.'));
-  }
+    function saveEntry(data) {
+      db.collection("entries").add(data).then(() => {
+        alert("Entry uploaded!");
+        localStorage.removeItem("draftText");
+        entryText.value = "";
+        entryImage.value = "";
+        loadEntries();
+      });
+    }
 
-  function showToast(message) {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.style.display = 'block';
-    setTimeout(() => { toast.style.display = 'none'; }, 3000);
-  }
-
-  function createFloatingHearts() {
-    const container = document.querySelector('.floating-hearts');
-    setInterval(() => {
-      const heart = document.createElement('div');
-      heart.className = 'heart';
-      heart.style.left = Math.random() * 100 + '%';
-      heart.style.background = ['#ff99cc', '#ff66b2', '#ffb6c1', '#ffcce6'][Math.floor(Math.random() * 4)];
-      container.appendChild(heart);
-      setTimeout(() => heart.remove(), 8000);
-    }, 800);
-  }
-
-  createFloatingHearts();
-  loadEntries();
-</script>
+    function loadEntries() {
+      entriesContainer.innerHTML = "";
+      db.collection("entries").orderBy("timestamp", "desc").get().then(snapshot => {
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          if (data.password !== PASSWORD) return;
+          const div = document.createElement("div");
+          div.className = "diary-entry";
+          const date = new Date(data.timestamp).toLocaleString();
+          div.innerHTML = `<small>${date}</small><p>${data.text}</p>${data.image ? `<img src="${data.image}" style="max-width:100%; border-radius:10px;">` : ""}`;
+          entriesContainer.appendChild(div);
+        });
+      });
+    }
+  </script>
 </body>
 </html>
