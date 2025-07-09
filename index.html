@@ -122,7 +122,7 @@
     <option value="Times New Roman, serif">Times New Roman</option>
   </select>
   <textarea id="entryText" placeholder="Write something..."></textarea>
-  <input type="file" id="entryImage">
+  <input type="file" id="entryImage" accept="image/*">
   <button onclick="submitEntry()">Submit</button>
   <div class="uploading" id="uploadingStatus">Uploading image...</div>
 </div>
@@ -143,17 +143,33 @@
 <h2>Photo Dump</h2>
 <div class="photo-dump" id="photoDump"></div>
 <script>
-  const firebaseConfig = { apiKey: "AIzaSyDtHj92IVoxoyz2EtMVaaHVKyPP7UHDpEU", authDomain: "unspoken-hearts-diary.firebaseapp.com", projectId: "unspoken-hearts-diary", storageBucket: "unspoken-hearts-diary.appspot.com", messagingSenderId: "885095961873", appId: "1:885095961873:web:4b4c846cc2b28dbce928b0", measurementId: "G-2L9NESBKWN" };
+  const firebaseConfig = {
+    apiKey: "AIzaSyDtHj92IVoxoyz2EtMVaaHVKyPP7UHDpEU",
+    authDomain: "unspoken-hearts-diary.firebaseapp.com",
+    projectId: "unspoken-hearts-diary",
+    storageBucket: "unspoken-hearts-diary.appspot.com",
+    messagingSenderId: "885095961873",
+    appId: "1:885095961873:web:4b4c846cc2b28dbce928b0",
+    measurementId: "G-2L9NESBKWN"
+  };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
   const storage = firebase.storage();
   emailjs.init('QuFveASS-r2Favhcs');
   const PASSWORD = 'usdiary2025';
   if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
-  function checkPassword() { const input = document.getElementById('passwordInput').value; if(input === PASSWORD) document.querySelector('.password-screen').style.display = 'none'; else alert('Incorrect password'); }
-  function toggleDarkMode() { document.body.classList.toggle('dark'); localStorage.setItem('darkMode', document.body.classList.contains('dark')); }
+  function checkPassword() {
+    const input = document.getElementById('passwordInput').value;
+    if(input === PASSWORD) document.querySelector('.password-screen').style.display = 'none';
+    else alert('Incorrect password');
+  }
+  function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+  }
+
   function submitEntry() {
-    const text = document.getElementById('entryText').value;
+    const text = document.getElementById('entryText').value.trim();
     const sender = document.getElementById('entrySender').value;
     const category = document.getElementById('entryCategory').value;
     const font = document.getElementById('fontSelector').value;
@@ -161,34 +177,134 @@
     const file = fileInput.files[0];
     const uploadingStatus = document.getElementById('uploadingStatus');
 
-    if (!text.trim() && !file) return alert('Please write something or attach an image.');
+    if (!text && !file) {
+      alert('Please write something or attach an image.');
+      return;
+    }
 
-    const entryData = { text, sender, category, font, timestamp: Date.now(), replies: [] };
+    const entryData = {
+      text: text,
+      sender: sender,
+      category: category,
+      font: font,
+      timestamp: Date.now(),
+      replies: []
+    };
 
-    if(file) {
+    if (file) {
       uploadingStatus.style.display = 'block';
       const storageRef = storage.ref('images/' + Date.now() + '_' + file.name);
-      storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(url => {
-        entryData.image = url;
-        saveEntry(entryData);
-        uploadingStatus.style.display = 'none';
-        fileInput.value = '';
-      }).catch(error => {
-        uploadingStatus.style.display = 'none';
-        alert('Image upload failed: ' + error.message);
-      });
+      storageRef.put(file)
+        .then(snapshot => snapshot.ref.getDownloadURL())
+        .then(url => {
+          entryData.image = url;
+          saveEntry(entryData);
+          uploadingStatus.style.display = 'none';
+          resetForm();
+        })
+        .catch(error => {
+          uploadingStatus.style.display = 'none';
+          alert('Image upload failed: ' + error.message);
+        });
     } else {
       saveEntry(entryData);
-      fileInput.value = '';
+      resetForm();
     }
   }
-  function saveEntry(data) { db.collection('entries').add(data).then(() => { document.getElementById('entryText').value = ''; }); }
-  function loadEntries() { const selectedCategory = document.getElementById('filterCategory').value; db.collection('entries').orderBy('timestamp', 'desc').onSnapshot(snapshot => { const container = document.getElementById('entries'); container.innerHTML = ''; const dump = document.getElementById('photoDump'); dump.innerHTML = ''; snapshot.forEach(doc => { const data = doc.data(); if(selectedCategory !== 'All' && data.category !== selectedCategory) return; const div = document.createElement('div'); div.className = 'diary-entry ' + data.sender; div.style.fontFamily = data.font || 'Arial, sans-serif'; const timeString = new Date(data.timestamp).toLocaleString(); let repliesHTML = ''; (data.replies || []).forEach((r, idx) => { const replyTime = new Date(r.timestamp).toLocaleString(); repliesHTML += <p>${r.text}<br><small style="font-size:0.75em;color:gray;">${replyTime}</small> <button style="margin-left:10px;" onclick="deleteReply('${doc.id}', ${idx})">🗑️</button></p>; }); div.innerHTML = <strong>Category: ${data.category || 'General'}</strong><br><small>${timeString}</small><p>${data.text || ''}</p>${data.image ? <img src="${data.image}" alt="Attached Image"> : ''}<div class="reply">${repliesHTML}<input type="text" placeholder="Reply..." id="reply-${doc.id}"><button onclick="addReply('${doc.id}')">↩️</button><button onclick="deleteEntry('${doc.id}')">🗑️</button></div>; container.appendChild(div); if(data.image) { const img = document.createElement('img'); img.src = data.image; img.alt = 'Photo Dump Image'; dump.appendChild(img); } }); }); }
-  function addReply(id) { const replyInput = document.getElementById(reply-${id}); const replyText = replyInput.value.trim(); if(!replyText) return; const replyWithTime = { text: replyText, timestamp: Date.now() }; db.collection('entries').doc(id).update({ replies: firebase.firestore.FieldValue.arrayUnion(replyWithTime) }).then(() => { replyInput.value = ''; }); }
-  function deleteReply(entryId, replyIndex) { const entryRef = db.collection('entries').doc(entryId); entryRef.get().then(doc => { if(doc.exists) { const data = doc.data(); const replies = data.replies || []; replies.splice(replyIndex, 1); entryRef.update({ replies: replies }); } }); }
-  function deleteEntry(id) { if(confirm('Delete this entry?')) { db.collection('entries').doc(id).delete(); } }
-  function sendMood(mood) { const templateParams = { to_email: 'kaito2epic@gmail.com', mood: mood }; emailjs.send('service_g01f5f1', 'template_vzvlohc', templateParams).then(() => alert('Mood sent!')).catch(() => alert('Failed to send mood.')); }
-  function createFloatingHearts() { const container = document.querySelector('.floating-hearts'); setInterval(() => { const heart = document.createElement('div'); heart.className = 'heart'; heart.style.left = Math.random() * 100 + '%'; heart.style.background = ['#ff99cc', '#ff66b2', '#ffb6c1', '#ffcce6'][Math.floor(Math.random() * 4)]; container.appendChild(heart); setTimeout(() => heart.remove(), 8000); }, 800); }
+
+  function resetForm() {
+    document.getElementById('entryText').value = '';
+    document.getElementById('entryImage').value = '';
+    document.getElementById('uploadingStatus').style.display = 'none';
+    loadEntries();
+    alert('Entry successfully uploaded!');
+  }
+
+  function saveEntry(data) {
+    db.collection('entries').add(data).then(() => {});
+  }
+
+  function loadEntries() {
+    const selectedCategory = document.getElementById('filterCategory').value;
+    db.collection('entries').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+      const container = document.getElementById('entries');
+      container.innerHTML = '';
+      const dump = document.getElementById('photoDump');
+      dump.innerHTML = '';
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if(selectedCategory !== 'All' && data.category !== selectedCategory) return;
+        const div = document.createElement('div');
+        div.className = 'diary-entry ' + data.sender;
+        div.style.fontFamily = data.font || 'Arial, sans-serif';
+        const timeString = new Date(data.timestamp).toLocaleString();
+        let repliesHTML = '';
+        (data.replies || []).forEach((r, idx) => {
+          const replyTime = new Date(r.timestamp).toLocaleString();
+          repliesHTML += `<p>${r.text}<br><small style="font-size:0.75em;color:gray;">${replyTime}</small> <button style="margin-left:10px;" onclick="deleteReply('${doc.id}', ${idx})">🗑️</button></p>`;
+        });
+        div.innerHTML = `<strong>Category: ${data.category || 'General'}</strong><br><small>${timeString}</small><p>${data.text || ''}</p>${data.image ? `<img src="${data.image}" alt="Attached Image">` : ''}<div class="reply">${repliesHTML}<input type="text" placeholder="Reply..." id="reply-${doc.id}"><button onclick="addReply('${doc.id}')">↩️</button><button onclick="deleteEntry('${doc.id}')">🗑️</button></div>`;
+        container.appendChild(div);
+        if(data.image) {
+          const img = document.createElement('img');
+          img.src = data.image;
+          img.alt = 'Photo Dump Image';
+          dump.appendChild(img);
+        }
+      });
+    });
+  }
+
+  function addReply(id) {
+    const replyInput = document.getElementById(`reply-${id}`);
+    const replyText = replyInput.value.trim();
+    if(!replyText) return;
+    const replyWithTime = { text: replyText, timestamp: Date.now() };
+    db.collection('entries').doc(id).update({
+      replies: firebase.firestore.FieldValue.arrayUnion(replyWithTime)
+    }).then(() => { replyInput.value = ''; });
+  }
+
+  function deleteReply(entryId, replyIndex) {
+    const entryRef = db.collection('entries').doc(entryId);
+    entryRef.get().then(doc => {
+      if(doc.exists) {
+        const data = doc.data();
+        const replies = data.replies || [];
+        replies.splice(replyIndex, 1);
+        entryRef.update({ replies: replies });
+      }
+    });
+  }
+
+  function deleteEntry(id) {
+    if(confirm('Delete this entry?')) {
+      db.collection('entries').doc(id).delete();
+    }
+  }
+
+  function sendMood(mood) {
+    const templateParams = {
+      to_email: 'kaito2epic@gmail.com',
+      mood: mood
+    };
+    emailjs.send('service_g01f5f1', 'template_vzvlohc', templateParams)
+      .then(() => alert('Mood sent!'))
+      .catch(() => alert('Failed to send mood.'));
+  }
+
+  function createFloatingHearts() {
+    const container = document.querySelector('.floating-hearts');
+    setInterval(() => {
+      const heart = document.createElement('div');
+      heart.className = 'heart';
+      heart.style.left = Math.random() * 100 + '%';
+      heart.style.background = ['#ff99cc', '#ff66b2', '#ffb6c1', '#ffcce6'][Math.floor(Math.random() * 4)];
+      container.appendChild(heart);
+      setTimeout(() => heart.remove(), 8000);
+    }, 800);
+  }
+
   createFloatingHearts();
   loadEntries();
 </script>
