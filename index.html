@@ -1,209 +1,263 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Unspoken Hearts 💌</title>
-  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;400;600&family=Caveat&family=Roboto+Mono&family=Indie+Flower&family=Shadows+Into+Light&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💌 Unspoken Hearts</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2.6.4/dist/email.min.js"></script>
   <style>
-    :root {
-      --bg-color: #fff5f8;
-      --card-bg: #fff;
-      --text-color: #444;
-      --border-color: #ddd;
-    }
-    body.dark {
-      --bg-color: #1e1e1e;
-      --card-bg: #2b2b2b;
-      --text-color: #eee;
-      --border-color: #555;
-    }
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: var(--bg-color);
-      color: var(--text-color);
-      padding: 20px;
-      transition: background 0.3s ease, color 0.3s ease, font-family 0.3s ease;
-    }
-    h1 {
-      font-family: 'Pacifico', cursive;
-      text-align: center;
-      color: #ff5e94;
-      margin-bottom: 20px;
-      animation: fadeIn 1.5s ease;
-    }
-    @keyframes fadeIn {
-      from {opacity: 0; transform: translateY(-10px);}
-      to {opacity: 1; transform: translateY(0);}
-    }
-    #passwordSection,
-    #diarySection {
-      max-width: 650px;
-      margin: auto;
-      background: var(--card-bg);
-      border-radius: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      padding: 20px;
-      transition: all 0.3s ease;
-      animation: fadeIn 1s ease;
-    }
-    textarea,
-    input[type='text'],
-    input[type='password'],
-    select {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-      font-family: inherit;
-      background: var(--card-bg);
-      color: var(--text-color);
-      resize: vertical;
-    }
-    .author-buttons {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      margin: 8px 0;
-    }
-    .author-buttons button {
-      flex: 1;
-      border-radius: 12px;
-      border: 2px solid transparent;
-    }
-    .author-buttons button.selected {
-      border-color: #444;
-      background-color: #ffe0ec;
-    }
-    button {
-      background: #ff5e94;
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      padding: 10px 16px;
-      margin-top: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background 0.3s ease, transform 0.2s;
-    }
-    button:hover {
-      background: #e14c82;
-      transform: scale(1.05);
-    }
-    .entry {
-      border-radius: 15px;
-      padding: 12px;
-      margin: 12px 0;
-      box-shadow: 0 0 6px rgba(0,0,0,0.1);
-      background: var(--card-bg);
-      position: relative;
-      overflow: hidden;
-      animation: fadeIn 0.8s ease;
-    }
-    .red { border-left: 6px solid #ff99aa; }
-    .blue { border-left: 6px solid #99cfff; }
-    .reply {
-      margin-left: 15px;
-      font-size: 0.85em;
-      padding: 6px 10px;
-      background: var(--card-bg);
-      border-radius: 10px;
-      margin-top: 6px;
-      border: 1px dashed var(--border-color);
-      animation: fadeIn 0.5s ease;
-      position: relative;
-    }
-    .reply.jeah {
-      border-left: 4px solid #ff99aa;
-      background-color: rgba(255, 153, 170, 0.1);
-    }
-    .reply.dave {
-      border-left: 4px solid #99cfff;
-      background-color: rgba(153, 207, 255, 0.1);
-    }
-    .reply small {
-      display: block;
-      color: var(--text-color);
-      margin-top: 4px;
-    }
-    .delete-reply {
-      position: absolute;
-      top: 4px;
-      right: 8px;
-      background: transparent;
-      border: none;
-      color: var(--text-color);
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 1.1em;
-      line-height: 1;
-      padding: 0;
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
+    body { font-family: 'Quicksand', sans-serif; background-color: #fff0f5; color: #333; padding: 20px; max-width: 800px; margin: auto; animation: fadeInBody 1s ease; position: relative; overflow-x: hidden; }
+    body.dark { background-color: #1e1e1e; color: #e0e0e0; }
+    @keyframes fadeInBody { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes bounceIn { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeInEntry { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes floatHeart { 0% { transform: translateY(0) scale(1.2); opacity: 0.8; } 50% { transform: translateY(-300px) scale(1.5); opacity: 0.4; } 100% { transform: translateY(-600px) scale(1); opacity: 0; } }
+    h1 { text-align: center; font-size: 40px; font-family: 'Pacifico', cursive; color: #ff69b4; animation: bounceIn 1s ease; }
+    h2 { text-align: center; color: #ff69b4; animation: fadeIn 1s ease; }
+    textarea, input[type="file"], select, button { width: 100%; padding: 10px; margin-top: 10px; border-radius: 12px; border: 1px solid #ccc; box-sizing: border-box; font-family: 'Quicksand', sans-serif; transition: transform 0.2s; }
+    button:hover { background-color: #ff69b4; transform: scale(1.05); }
+    .password-screen { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #fff0f5; position: fixed; width: 100%; top: 0; left: 0; z-index: 1000; animation: fadeIn 1s ease; }
+    .diary-entry { background: #fffafc; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); padding: 15px; margin-bottom: 15px; animation: fadeInEntry 0.5s ease; }
+    .diary-entry.red { background-color: #ffe6f0; }
+    .diary-entry.blue { background-color: #e6f7ff; }
+    body.dark .diary-entry { background: #2c2c2c; color: #ddd; }
+    body.dark .diary-entry.red { background-color: #4d2c39; }
+    body.dark .diary-entry.blue { background-color: #2c3a4d; }
+    .diary-entry small { color: #777; font-size: 0.85em; }
+    body.dark .diary-entry small { color: #bbb; }
+    .diary-entry img { max-width: 100%; border-radius: 12px; margin-top: 10px; animation: fadeIn 0.8s ease; }
+    .reply { margin-top: 15px; background: #f9f9f9; border-radius: 10px; padding: 10px; animation: fadeIn 1s ease; }
+    body.dark .reply { background: #3a3a3a; }
+    .reply p { background: #fff; padding: 8px; border-radius: 8px; margin-bottom: 5px; position: relative; }
+    body.dark .reply p { background: #555; color: #eee; }
+    .photo-dump { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .photo-dump img { max-width: 100px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); animation: fadeIn 1s ease; }
+    .mood-buttons { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
+    .uploading { text-align: center; font-size: 14px; color: #ff69b4; margin-top: 5px; display: none; }
+    .heart { position: absolute; width: 20px; height: 20px; background: pink; border-radius: 50%; animation: floatHeart 8s linear infinite; opacity: 0.8; transform: scale(1.2); }
   </style>
-  <script>
-    function selectAuthor(name) {
-      document.getElementById("entryAuthor").value = name;
-      const buttons = document.querySelectorAll('.author-buttons button');
-      buttons.forEach(btn => btn.classList.remove('selected'));
-      document.getElementById("btn-" + name.toLowerCase()).classList.add('selected');
-    }
-    function checkPassword() {
-      const pass = document.getElementById("sharedPassword").value.trim();
-      if (pass === "usdiary2025") {
-        document.getElementById("passwordSection").style.display = "none";
-        document.getElementById("diarySection").style.display = "block";
-      } else {
-        alert("Incorrect password!");
-      }
-    }
-  </script>
 </head>
 <body>
-  <h1>Unspoken Hearts 💌</h1>
-
-  <div id="app">
-    <div id="passwordSection">
-      <input type="password" id="sharedPassword" placeholder="Enter shared password" />
-      <button onclick="checkPassword()">Access Diary</button>
-    </div>
-
-    <div id="diarySection" style="display:none;">
-      <textarea id="entryText" placeholder="Write your thoughts..."></textarea>
-      <input type="file" id="imageInput" accept="image/*" />
-
-      <div class="author-buttons">
-        <button id="btn-jeah" onclick="selectAuthor('Jeah')">Jeah</button>
-        <button id="btn-dave" onclick="selectAuthor('Dave')">Dave</button>
-      </div>
-      <input type="text" id="entryAuthor" placeholder="Your name (Dave or Jeah)" style="display:none;" />
-
-      <select id="entryCategory">
-        <option value="General">General</option>
-        <option value="Memories">Memories</option>
-        <option value="Love Notes">Love Notes</option>
-        <option value="Random">Random</option>
-        <option value="Unsaid Thoughts">Unsaid Thoughts</option>
-        <option value="Love Letter">Love Letter</option>
-        <option value="Rants">Rants</option>
-      </select>
-      <button onclick="addEntry()">Post Entry</button>
-
-      <div>
-        <label><strong>Filter by Category:</strong></label>
-        <select id="filterCategory" onchange="loadEntries()">
-          <option value="All">All</option>
-          <option value="General">General</option>
-          <option value="Memories">Memories</option>
-          <option value="Love Notes">Love Notes</option>
-          <option value="Random">Random</option>
-          <option value="Unsaid Thoughts">Unsaid Thoughts</option>
-          <option value="Love Letter">Love Letter</option>
-          <option value="Rants">Rants</option>
-        </select>
-      </div>
-
-      <div id="entries"></div>
-    </div>
+<div class="floating-hearts"></div>
+<div class="password-screen">
+  <div>
+    <h2>Enter Shared Password</h2>
+    <input type="password" id="passwordInput" placeholder="Password">
+    <button onclick="checkPassword()">Enter</button>
   </div>
+</div>
+
+<h1>💌 Unspoken Hearts</h1>
+<button onclick="toggleDarkMode()">Toggle Dark/Light Mode</button>
+
+<div>
+  <select id="entrySender">
+    <option value="red">Jeah</option>
+    <option value="blue">Dave</option>
+  </select>
+  <select id="entryCategory">
+    <option value="Love Letter">Love Letter</option>
+    <option value="Unsaid Thoughts">Unsaid Thoughts</option>
+    <option value="Rants">Rants</option>
+  </select>
+  <select id="fontSelector">
+    <option value="Arial, sans-serif">Arial</option>
+    <option value="Georgia, serif">Georgia</option>
+    <option value="Courier New, monospace">Courier New</option>
+    <option value="Times New Roman, serif">Times New Roman</option>
+  </select>
+  <textarea id="entryText" placeholder="Write something..."></textarea>
+  <input type="file" id="entryImage">
+  <button onclick="submitEntry()">Submit</button>
+  <div class="uploading" id="uploadingStatus">Uploading image...</div>
+</div>
+
+<div class="mood-buttons">
+  <button onclick="sendMood('happy')">😊</button>
+  <button onclick="sendMood('sad')">😢</button>
+  <button onclick="sendMood('love')">❤️</button>
+</div>
+
+<h2>Filter by Category</h2>
+<select id="filterCategory" onchange="loadEntries()">
+  <option value="All">All</option>
+  <option value="Love Letter">Love Letter</option>
+  <option value="Unsaid Thoughts">Unsaid Thoughts</option>
+  <option value="Rants">Rants</option>
+</select>
+
+<h2>Diary Entries</h2>
+<div id="entries"></div>
+
+<h2>Photo Dump</h2>
+<div class="photo-dump" id="photoDump"></div>
+
+<script>
+  const firebaseConfig = { /* your config here */ };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const storage = firebase.storage();
+  emailjs.init('QuFveASS-r2Favhcs');
+  const PASSWORD = 'usdiary2025';
+
+  if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
+
+  function checkPassword() {
+    const input = document.getElementById('passwordInput').value;
+    if(input === PASSWORD) document.querySelector('.password-screen').style.display = 'none';
+    else alert('Incorrect password');
+  }
+
+  function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+  }
+
+  function submitEntry() {
+    const text = document.getElementById('entryText').value;
+    const sender = document.getElementById('entrySender').value;
+    const category = document.getElementById('entryCategory').value;
+    const font = document.getElementById('fontSelector').value;
+    const fileInput = document.getElementById('entryImage');
+    const file = fileInput.files[0];
+    const uploadingStatus = document.getElementById('uploadingStatus');
+
+    if (!text.trim() && !file) return alert('Please write something or attach an image.');
+
+    const entryData = { text, sender, category, font, timestamp: Date.now(), replies: [] };
+
+    if(file) {
+      uploadingStatus.style.display = 'block';
+      const storageRef = storage.ref().child('images/' + Date.now() + '_' + file.name);
+
+      storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL())
+        .then(url => {
+          entryData.image = url;
+          saveEntry(entryData);
+          uploadingStatus.style.display = 'none';
+          fileInput.value = '';
+        })
+        .catch(error => {
+          uploadingStatus.style.display = 'none';
+          alert('Image upload failed: ' + error.message);
+        });
+    } else {
+      saveEntry(entryData);
+      fileInput.value = '';
+    }
+  }
+
+  function saveEntry(data) {
+    db.collection('entries').add(data).then(() => {
+      document.getElementById('entryText').value = '';
+      loadEntries();
+    });
+  }
+
+  function loadEntries() {
+    const selectedCategory = document.getElementById('filterCategory').value;
+    db.collection('entries').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+      const container = document.getElementById('entries');
+      container.innerHTML = '';
+      const dump = document.getElementById('photoDump');
+      dump.innerHTML = '';
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if(selectedCategory !== 'All' && data.category !== selectedCategory) return;
+
+        const div = document.createElement('div');
+        div.className = 'diary-entry ' + data.sender;
+        div.style.fontFamily = data.font || 'Arial, sans-serif';
+
+        const timeString = new Date(data.timestamp).toLocaleString();
+
+        let repliesHtml = '';
+        (data.replies || []).forEach((r, index) => {
+          const replyTime = r.timestamp ? new Date(r.timestamp).toLocaleString() : '';
+          repliesHtml += `<p>${r.text}<br><small>${replyTime}</small> <button onclick="deleteReply('${doc.id}', ${index})">🗑️</button></p>`;
+        });
+
+        div.innerHTML = `
+          <strong>Category: ${data.category || 'General'}</strong><br>
+          <small>${timeString}</small>
+          <p>${data.text || ''}</p>
+          ${data.image ? `<img src="${data.image}" alt="Attached Image">` : ''}
+          <div class="reply">
+            ${repliesHtml}
+            <input type="text" placeholder="Reply..." id="reply-${doc.id}">
+            <button onclick="addReply('${doc.id}')">↩️</button>
+            <button onclick="deleteEntry('${doc.id}')">🗑️</button>
+          </div>
+        `;
+
+        container.appendChild(div);
+
+        if(data.image) {
+          const img = document.createElement('img');
+          img.src = data.image;
+          dump.appendChild(img);
+        }
+      });
+    });
+  }
+
+  function addReply(id) {
+    const replyInput = document.getElementById(`reply-${id}`);
+    const replyText = replyInput.value;
+    if(!replyText.trim()) return;
+
+    const replyWithTime = { text: replyText, timestamp: Date.now() };
+
+    db.collection('entries').doc(id).update({
+      replies: firebase.firestore.FieldValue.arrayUnion(replyWithTime)
+    }).then(() => {
+      replyInput.value = '';
+    });
+  }
+
+  function deleteReply(entryId, replyIndex) {
+    const entryRef = db.collection('entries').doc(entryId);
+    entryRef.get().then(doc => {
+      if(doc.exists) {
+        const data = doc.data();
+        data.replies.splice(replyIndex, 1);
+        entryRef.update({ replies: data.replies });
+      }
+    });
+  }
+
+  function deleteEntry(id) {
+    if(confirm('Delete this entry?')) db.collection('entries').doc(id).delete();
+  }
+
+  function sendMood(mood) {
+    emailjs.send('service_g01f5f1', 'template_vzvlohc', {
+      to_email: 'kaito2epic@gmail.com',
+      mood: mood
+    }).then(() => alert('Mood sent!'))
+    .catch(() => alert('Failed to send mood.'));
+  }
+
+  function createFloatingHearts() {
+    const container = document.querySelector('.floating-hearts');
+    setInterval(() => {
+      const heart = document.createElement('div');
+      heart.className = 'heart';
+      heart.style.left = Math.random() * 100 + '%';
+      heart.style.background = ['#ff99cc', '#ff66b2', '#ffb6c1', '#ffcce6'][Math.floor(Math.random() * 4)];
+      container.appendChild(heart);
+      setTimeout(() => heart.remove(), 8000);
+    }, 800);
+  }
+
+  createFloatingHearts();
+  loadEntries();
+</script>
 </body>
 </html>
