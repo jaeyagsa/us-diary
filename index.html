@@ -147,6 +147,15 @@
       buttons.forEach(btn => btn.classList.remove('selected'));
       document.getElementById("btn-" + name.toLowerCase()).classList.add('selected');
     }
+    function checkPassword() {
+      const pass = document.getElementById("sharedPassword").value.trim();
+      if (pass === "usdiary2025") {
+        document.getElementById("passwordSection").style.display = "none";
+        document.getElementById("diarySection").style.display = "block";
+      } else {
+        alert("Incorrect password!");
+      }
+    }
   </script>
 </head>
 <body>
