@@ -22,9 +22,14 @@
     body.theme-blue { background-color: #e0f7fa; color: #004d40; }
     body.theme-yellow { background-color: #fff8e1; color: #795548; }
 
-    h1 { text-align: center; font-size: 40px; font-family: 'Pacifico', cursive; color: #ff69b4; animation: bounceIn 1s ease; }
+    h1 { text-align: center; font-size: 40px; font-family: 'Pacifico', cursive; color: #ff69b4; animation: bounceIn 1s ease; margin-bottom: 20px; }
 
     .password-screen { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #fff0f5; position: fixed; width: 100%; top: 0; left: 0; z-index: 1000; animation: fadeIn 1s ease; }
+
+    .input-group, .filter-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; animation: fadeInEntry 1s ease; }
+    select, textarea, input[type="file"], button { padding: 10px; border-radius: 10px; border: 1px solid #ccc; font-family: 'Quicksand', sans-serif; }
+    button:hover { background-color: #ffb6c1; cursor: pointer; transition: all 0.3s ease; }
+
     .diary-entry { background: #fffafc; border-radius: 15px; padding: 15px; margin-bottom: 15px; animation: fadeInEntry 0.5s ease; }
     .diary-entry.red { background-color: #ffe6f0; }
     .diary-entry.blue { background-color: #e6f7ff; }
@@ -32,7 +37,7 @@
     body.dark .diary-entry.red { background-color: #4d2c39; }
     body.dark .diary-entry.blue { background-color: #2c3a4d; }
 
-    .photo-dump { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .photo-dump { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 30px; }
     .photo-dump img { max-width: 100px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); animation: fadeIn 1s ease; }
 
     .reply-block { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; }
@@ -62,47 +67,54 @@
 </div>
 
 <h1>💌 Unspoken Hearts</h1>
-<button onclick="toggleDarkMode()">Toggle Dark Mode</button>
-<select onchange="switchTheme(this.value)">
-  <option value="">Default</option>
-  <option value="theme-blue">Blue Theme</option>
-  <option value="theme-yellow">Yellow Theme</option>
-</select>
-
-<!-- Entry Form -->
-<select id="entrySender">
-  <option value="red">Jeah</option>
-  <option value="blue">Dave</option>
-</select>
-<select id="entryCategory">
-  <option value="Love Letter">Love Letter</option>
-  <option value="Unsaid Thoughts">Unsaid Thoughts</option>
-  <option value="Rants">Rants</option>
-</select>
-<select id="fontSelector">
-  <option value="Arial, sans-serif">Arial</option>
-  <option value="Georgia, serif">Georgia</option>
-  <option value="Courier New, monospace">Courier New</option>
-  <option value="Times New Roman, serif">Times New Roman</option>
-</select>
-<textarea id="entryText" placeholder="Write something..."></textarea>
-<input type="file" id="entryImage">
-<button onclick="submitEntry()">Submit</button>
-<div class="uploading" id="uploadingStatus">Uploading image...</div>
-
-<div class="mood-buttons">
-  <button onclick="sendMood('happy')">😊</button>
-  <button onclick="sendMood('sad')">😢</button>
-  <button onclick="sendMood('love')">❤️</button>
+<div class="input-group">
+  <button onclick="toggleDarkMode()">🌗 Toggle Dark Mode</button>
+  <select onchange="switchTheme(this.value)">
+    <option value="">Default</option>
+    <option value="theme-blue">Blue Theme</option>
+    <option value="theme-yellow">Yellow Theme</option>
+  </select>
 </div>
 
-<h2>Filter by Category</h2>
-<select id="filterCategory" onchange="loadEntries()">
-  <option value="All">All</option>
-  <option value="Love Letter">Love Letter</option>
-  <option value="Unsaid Thoughts">Unsaid Thoughts</option>
-  <option value="Rants">Rants</option>
-</select>
+<div class="input-group">
+  <select id="entrySender">
+    <option value="red">Jeah</option>
+    <option value="blue">Dave</option>
+  </select>
+  <select id="entryCategory">
+    <option value="Love Letter">Love Letter</option>
+    <option value="Unsaid Thoughts">Unsaid Thoughts</option>
+    <option value="Rants">Rants</option>
+  </select>
+  <select id="fontSelector">
+    <option value="Arial, sans-serif">Arial</option>
+    <option value="Georgia, serif">Georgia</option>
+    <option value="Courier New, monospace">Courier New</option>
+    <option value="Times New Roman, serif">Times New Roman</option>
+  </select>
+  <textarea id="entryText" placeholder="Write something..."></textarea>
+  <input type="file" id="entryImage">
+  <button onclick="submitEntry()">Submit</button>
+  <div class="uploading" id="uploadingStatus">Uploading image...</div>
+</div>
+
+<div class="input-group">
+  <div class="mood-buttons">
+    <button onclick="sendMood('happy')">😊</button>
+    <button onclick="sendMood('sad')">😢</button>
+    <button onclick="sendMood('love')">❤️</button>
+  </div>
+</div>
+
+<div class="filter-group">
+  <h2>Filter by Category</h2>
+  <select id="filterCategory" onchange="loadEntries()">
+    <option value="All">All</option>
+    <option value="Love Letter">Love Letter</option>
+    <option value="Unsaid Thoughts">Unsaid Thoughts</option>
+    <option value="Rants">Rants</option>
+  </select>
+</div>
 
 <h2>Diary Entries</h2>
 <div id="entries"></div>
@@ -125,6 +137,11 @@ function checkPassword() {
 function switchTheme(theme) {
   document.body.className = document.body.className.replace(/theme-\w+/g, '').trim();
   if (theme) document.body.classList.add(theme);
+}
+
+function toggleDarkMode() {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('darkMode', document.body.classList.contains('dark'));
 }
 
 function deleteReply(entryId, replyText, timestamp) {
