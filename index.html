@@ -145,7 +145,12 @@
       return;
     }
 
-    const entryData = { text, sender, category, font, timestamp: Date.now(), replies: [] };
+    const entryData = {
+      text, sender, category, font,
+      timestamp: Date.now(),
+      replies: [],
+      password: 'usdiary2025'
+    };
 
     if (file) {
       uploadingStatus.style.display = 'block';
@@ -187,6 +192,10 @@
       container.innerHTML = '';
       const dump = document.getElementById('photoDump');
       dump.innerHTML = '';
+      if (snapshot.empty) {
+        container.innerHTML = '<p>No entries found or access denied.</p>';
+        return;
+      }
       snapshot.forEach(doc => {
         const data = doc.data();
         if(selectedCategory !== 'All' && data.category !== selectedCategory) return;
@@ -207,6 +216,9 @@
           dump.appendChild(img);
         }
       });
+    }, error => {
+      console.error("Firestore error:", error.message);
+      showToast("Failed to load entries. Check Firestore rules.");
     });
   }
 
