@@ -19,32 +19,166 @@
       animation: fadeInBody 1s ease;
       overflow-x: hidden;
       position: relative;
+      transition: background-color 0.5s ease, color 0.5s ease;
     }
-    body.dark { background-color: #1e1e1e; color: #e0e0e0; }
+
+    body * {
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+
+    body.dark {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+    }
+
+    body.dark .diary-entry {
+      background-color: #2a2a2a;
+      color: #e0e0e0;
+    }
+
+    body.dark .diary-entry.red { background-color: #4a2b35; }
+    body.dark .diary-entry.blue { background-color: #2b3a4a; }
+
+    body.dark .reply {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    body.dark textarea,
+    body.dark input[type="file"],
+    body.dark input[type="text"],
+    body.dark input[type="password"],
+    body.dark select {
+      background-color: #2a2a2a;
+      color: #e0e0e0;
+      border: 1px solid #555;
+    }
+
+    body.dark button {
+      background-color: #444;
+      color: #fff;
+      border: 1px solid #666;
+    }
+
+    body.dark button:hover {
+      background-color: #ff69b4;
+      color: #fff;
+    }
+
+    body.dark .password-screen {
+      background-color: #1e1e1e;
+      color: #fff;
+    }
+
+    body.dark #toast {
+      background-color: #ff69b4;
+      color: white;
+    }
+
     @keyframes fadeInBody { from { opacity: 0; } to { opacity: 1; } }
     @keyframes bounceIn { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
     @keyframes fadeInEntry { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes floatHeart { 0% { transform: translateY(0) scale(1.2); opacity: 0.8; } 50% { transform: translateY(-300px) scale(1.5); opacity: 0.4; } 100% { transform: translateY(-600px) scale(1); opacity: 0; } }
-    h1 { text-align: center; font-size: 40px; font-family: 'Pacifico', cursive; color: #ff69b4; animation: bounceIn 1s ease; }
+
+    h1 {
+      text-align: center;
+      font-size: 40px;
+      font-family: 'Pacifico', cursive;
+      color: #ff69b4;
+      animation: bounceIn 1s ease;
+    }
+
     h2 { text-align: center; color: #ff69b4; }
+
     textarea, input[type="file"], select, button {
-      width: 100%; padding: 10px; margin-top: 10px; border-radius: 12px; border: 1px solid #ccc; box-sizing: border-box;
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
     }
-    button:hover { background-color: #ff69b4; transform: scale(1.05); }
+
+    button:hover {
+      background-color: #ff69b4;
+      transform: scale(1.05);
+    }
+
     .password-screen {
-      display: flex; justify-content: center; align-items: center; height: 100vh;
-      background-color: #fff0f5; position: fixed; width: 100%; top: 0; left: 0; z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #fff0f5;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      left: 0;
+      z-index: 1000;
     }
-    .diary-entry { background: #fffafc; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); padding: 15px; margin-bottom: 15px; animation: fadeInEntry 0.5s ease; }
+
+    .diary-entry {
+      background: #fffafc;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      padding: 15px;
+      margin-bottom: 15px;
+      animation: fadeInEntry 0.5s ease;
+      font-size: var(--entry-font-size, 16px);
+    }
+
     .diary-entry.red { background-color: #ffe6f0; }
     .diary-entry.blue { background-color: #e6f7ff; }
-    .diary-entry img { max-width: 100%; border-radius: 12px; margin-top: 10px; }
-    .reply { margin-top: 15px; background: #f9f9f9; border-radius: 10px; padding: 10px; }
-    .photo-dump { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-    .photo-dump img { max-width: 100px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .mood-buttons { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
-    .uploading { text-align: center; font-size: 14px; color: #ff69b4; margin-top: 5px; display: none; }
-    .heart { position: absolute; width: 20px; height: 20px; background: pink; border-radius: 50%; animation: floatHeart 8s linear infinite; }
+
+    .diary-entry img {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-top: 10px;
+    }
+
+    .reply {
+      margin-top: 15px;
+      background: #f9f9f9;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .photo-dump {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .photo-dump img {
+      max-width: 100px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .mood-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .uploading {
+      text-align: center;
+      font-size: 14px;
+      color: #ff69b4;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .heart {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: pink;
+      border-radius: 50%;
+      animation: floatHeart 8s linear infinite;
+    }
   </style>
 </head>
 <body>
@@ -58,7 +192,18 @@
 </div>
 
 <h1>💌 Unspoken Hearts</h1>
-<button onclick="toggleDarkMode()">Toggle Dark/Light Mode</button>
+
+<!-- 🌙/☀️ Toggle + Font Size -->
+<div style="text-align: center; margin-bottom: 10px;">
+  <button id="darkModeToggle" onclick="toggleDarkMode()" style="font-size: 24px; background: none; border: none; cursor: pointer;">🌙</button>
+  <select id="fontSizeSelector" onchange="changeFontSize()" style="margin-left: 10px;">
+    <option value="14px">Small</option>
+    <option value="16px" selected>Medium</option>
+    <option value="18px">Large</option>
+    <option value="20px">Extra Large</option>
+  </select>
+</div>
+
 <div>
   <select id="entrySender">
     <option value="red">Jeah</option>
@@ -80,6 +225,7 @@
   <button onclick="submitEntry()">Submit</button>
   <div class="uploading" id="uploadingStatus">Uploading image...</div>
 </div>
+
 <div class="mood-buttons">
   <button onclick="sendMood('happy')">😊</button>
   <button onclick="sendMood('sad')">😢</button>
@@ -113,7 +259,19 @@
   emailjs.init('QuFveASS-r2Favhcs');
   const PASSWORD = 'usdiary2025';
 
+  // Apply dark mode preference
   if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
+
+  // Apply font size preference
+  const savedFontSize = localStorage.getItem('fontSize') || '16px';
+  document.getElementById('fontSizeSelector').value = savedFontSize;
+  document.documentElement.style.setProperty('--entry-font-size', savedFontSize);
+
+  function changeFontSize() {
+    const size = document.getElementById('fontSizeSelector').value;
+    document.documentElement.style.setProperty('--entry-font-size', size);
+    localStorage.setItem('fontSize', size);
+  }
 
   function checkPassword() {
     const input = document.getElementById('passwordInput').value;
@@ -123,7 +281,9 @@
 
   function toggleDarkMode() {
     document.body.classList.toggle('dark');
-    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+    const isDark = document.body.classList.contains('dark');
+    localStorage.setItem('darkMode', isDark);
+    document.getElementById('darkModeToggle').textContent = isDark ? '☀️' : '🌙';
   }
 
   function submitEntry() {
@@ -272,6 +432,7 @@
 
   createFloatingHearts();
   loadEntries();
+  document.getElementById('darkModeToggle').textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
 </script>
 </body>
 </html>
