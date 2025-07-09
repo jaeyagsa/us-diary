@@ -406,14 +406,18 @@
 
   function sendMood(mood) {
   const templateParams = {
-    to_email: 'mrrs05062025@gmail.com',  // ✅ CORRECT — matches your {{email}} in the template
-    mood: mood                      // ✅ CORRECT — matches your {{mood}} in the template
+    to_email: 'mrrs06052025@gmail.com',
+    mood: mood,
+    date: new Date().toLocaleString()
   };
 
   emailjs.send('service_g01f5f1', 'template_vzvlohc', templateParams)
     .then(() => showToast('Mood sent!'))
-    .catch(() => showToast('Failed to send mood.'));
-  }
+    .catch((error) => {
+      console.error('Mood send failed:', error);
+      showToast('Failed to send mood.');
+    });
+}
 
   function showToast(message) {
     const toast = document.getElementById('toast');
