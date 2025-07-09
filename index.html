@@ -405,10 +405,15 @@
   }
 
   function sendMood(mood) {
-    const templateParams = { to_email: 'kaito2epic@gmail.com', mood: mood };
-    emailjs.send('service_g01f5f1', 'template_vzvlohc', templateParams)
-      .then(() => showToast('Mood sent!'))
-      .catch(() => showToast('Failed to send mood.'));
+  const templateParams = {
+    email: 'kaito2epic@gmail.com',  // ✅ CORRECT — matches your {{email}} in the template
+    mood: mood                      // ✅ CORRECT — matches your {{mood}} in the template
+  };
+
+  emailjs.send('service_g01f5f1', 'template_vzvlohc', templateParams)
+    .then(() => showToast('Mood sent!'))
+    .catch(() => showToast('Failed to send mood.'));
+}
   }
 
   function showToast(message) {
