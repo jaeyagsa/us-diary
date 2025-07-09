@@ -134,13 +134,16 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    const screen = document.querySelector('.password-screen');
     const input = document.getElementById('passwordInput');
+
     input.addEventListener('keydown', e => {
       if (e.key === 'Enter') checkPassword();
     });
 
     if (localStorage.getItem('usDiaryAccess') === 'granted') {
-      document.querySelector('.password-screen').style.display = 'none';
+      screen.style.opacity = '0';
+      setTimeout(() => screen.style.display = 'none', 500);
     }
   });
 
