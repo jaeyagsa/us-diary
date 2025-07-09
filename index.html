@@ -69,8 +69,46 @@
   <option value="theme-yellow">Yellow Theme</option>
 </select>
 
-<!-- Existing input area remains unchanged -->
-<!-- ... -->
+<!-- Entry Form -->
+<select id="entrySender">
+  <option value="red">Jeah</option>
+  <option value="blue">Dave</option>
+</select>
+<select id="entryCategory">
+  <option value="Love Letter">Love Letter</option>
+  <option value="Unsaid Thoughts">Unsaid Thoughts</option>
+  <option value="Rants">Rants</option>
+</select>
+<select id="fontSelector">
+  <option value="Arial, sans-serif">Arial</option>
+  <option value="Georgia, serif">Georgia</option>
+  <option value="Courier New, monospace">Courier New</option>
+  <option value="Times New Roman, serif">Times New Roman</option>
+</select>
+<textarea id="entryText" placeholder="Write something..."></textarea>
+<input type="file" id="entryImage">
+<button onclick="submitEntry()">Submit</button>
+<div class="uploading" id="uploadingStatus">Uploading image...</div>
+
+<div class="mood-buttons">
+  <button onclick="sendMood('happy')">😊</button>
+  <button onclick="sendMood('sad')">😢</button>
+  <button onclick="sendMood('love')">❤️</button>
+</div>
+
+<h2>Filter by Category</h2>
+<select id="filterCategory" onchange="loadEntries()">
+  <option value="All">All</option>
+  <option value="Love Letter">Love Letter</option>
+  <option value="Unsaid Thoughts">Unsaid Thoughts</option>
+  <option value="Rants">Rants</option>
+</select>
+
+<h2>Diary Entries</h2>
+<div id="entries"></div>
+
+<h2>Photo Dump</h2>
+<div class="photo-dump" id="photoDump"></div>
 
 <script>
 const PASSWORD = 'usdiary2025';
