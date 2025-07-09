@@ -404,11 +404,12 @@
     });
   }
 
- const templateParams = {
-  to_email: 'mrrs06052025@gmail.com', // or any target email
-  mood: mood,
-  date: new Date().toLocaleString()
-};
+ function sendMood(mood) {
+  const templateParams = {
+    to_email: 'mrrs06052025@gmail.com',
+    mood: mood,
+    date: new Date().toLocaleString()
+  };
 
   emailjs.send('service_g01f5f1', 'template_vzvlohc', templateParams)
     .then(() => showToast('Mood sent!'))
