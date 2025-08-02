@@ -2,445 +2,126 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>💌 Unspoken Hearts</title>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unspoken Hearts Diary</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
     body {
-      font-family: 'Quicksand', sans-serif;
-      background-color: #fff0f5;
-      color: #333;
+      font-family: Arial, sans-serif;
       padding: 20px;
-      max-width: 800px;
-      margin: auto;
-      animation: fadeInBody 1s ease;
-      overflow-x: hidden;
-      position: relative;
-      transition: background-color 0.5s ease, color 0.5s ease;
+      background: #f8f8f8;
     }
-
-    body * {
-      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-    }
-
-    body.dark {
-      background-color: #1e1e1e;
-      color: #e0e0e0;
-    }
-
-    body.dark .diary-entry {
-      background-color: #2a2a2a;
-      color: #e0e0e0;
-    }
-
-    body.dark .diary-entry.red { background-color: #4a2b35; }
-    body.dark .diary-entry.blue { background-color: #2b3a4a; }
-
-    body.dark .reply {
-      background-color: #333;
-      color: #ddd;
-    }
-
-    body.dark textarea,
-    body.dark input[type="file"],
-    body.dark input[type="text"],
-    body.dark input[type="password"],
-    body.dark select {
-      background-color: #2a2a2a;
-      color: #e0e0e0;
-      border: 1px solid #555;
-    }
-
-    body.dark button {
-      background-color: #444;
-      color: #fff;
-      border: 1px solid #666;
-    }
-
-    body.dark button:hover {
-      background-color: #ff69b4;
-      color: #fff;
-    }
-
-    body.dark .password-screen {
-      background-color: #1e1e1e;
-      color: #fff;
-    }
-
-    body.dark #toast {
-      background-color: #ff69b4;
-      color: white;
-    }
-
-    @keyframes fadeInBody { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes bounceIn { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
-    @keyframes fadeInEntry { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes floatHeart { 0% { transform: translateY(0) scale(1.2); opacity: 0.8; } 50% { transform: translateY(-300px) scale(1.5); opacity: 0.4; } 100% { transform: translateY(-600px) scale(1); opacity: 0; } }
-
-    h1 {
-      text-align: center;
-      font-size: 40px;
-      font-family: 'Pacifico', cursive;
-      color: #ff69b4;
-      animation: bounceIn 1s ease;
-    }
-
-    h2 { text-align: center; color: #ff69b4; }
-
-    textarea, input[type="file"], select, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 12px;
+    .entry {
       border: 1px solid #ccc;
-      box-sizing: border-box;
-    }
-
-    button:hover {
-      background-color: #ff69b4;
-      transform: scale(1.05);
-    }
-
-    .password-screen {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: #fff0f5;
-      position: fixed;
-      width: 100%;
-      top: 0;
-      left: 0;
-      z-index: 1000;
-    }
-
-    .diary-entry {
-      background: #fffafc;
-      border-radius: 15px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      padding: 15px;
-      margin-bottom: 15px;
-      animation: fadeInEntry 0.5s ease;
-      font-size: var(--entry-font-size, 16px);
-    }
-
-    .diary-entry.red { background-color: #ffe6f0; }
-    .diary-entry.blue { background-color: #e6f7ff; }
-
-    .diary-entry img {
-      max-width: 100%;
-      border-radius: 12px;
-      margin-top: 10px;
-    }
-
-    .reply {
-      margin-top: 15px;
-      background: #f9f9f9;
-      border-radius: 10px;
       padding: 10px;
-    }
-
-    .photo-dump {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-    }
-
-    .photo-dump img {
-      max-width: 100px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-
-    .mood-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin: 15px 0;
-    }
-
-    .uploading {
-      text-align: center;
-      font-size: 14px;
-      color: #ff69b4;
-      margin-top: 5px;
-      display: none;
-    }
-
-    .heart {
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      background: pink;
-      border-radius: 50%;
-      animation: floatHeart 8s linear infinite;
+      margin: 10px 0;
+      background: #fff;
     }
   </style>
 </head>
 <body>
-<div class="floating-hearts"></div>
-<div class="password-screen">
-  <div>
-    <h2>Enter Shared Password</h2>
-    <input type="password" id="passwordInput" placeholder="Password">
-    <button onclick="checkPassword()">Enter</button>
-  </div>
-</div>
+  <h1>Unspoken Hearts Diary</h1>
 
-<h1>💌 Unspoken Hearts</h1>
-
-<!-- 🌙/☀️ Toggle + Font Size -->
-<div style="text-align: center; margin-bottom: 10px;">
-  <button id="darkModeToggle" onclick="toggleDarkMode()" style="font-size: 24px; background: none; border: none; cursor: pointer;">🌙</button>
-  <select id="fontSizeSelector" onchange="changeFontSize()" style="margin-left: 10px;">
-    <option value="14px">Small</option>
-    <option value="16px" selected>Medium</option>
-    <option value="18px">Large</option>
-    <option value="20px">Extra Large</option>
-  </select>
-</div>
-
-<div>
-  <select id="entrySender">
-    <option value="red">Jeah</option>
-    <option value="blue">Dave</option>
-  </select>
-  <select id="entryCategory">
-    <option value="Love Letter">Love Letter</option>
-    <option value="Unsaid Thoughts">Unsaid Thoughts</option>
-    <option value="Rants">Rants</option>
-  </select>
-  <select id="fontSelector">
-    <option value="Arial, sans-serif">Arial</option>
-    <option value="Georgia, serif">Georgia</option>
-    <option value="Courier New, monospace">Courier New</option>
-    <option value="Times New Roman, serif">Times New Roman</option>
-  </select>
-  <textarea id="entryText" placeholder="Write something..."></textarea>
-  <input type="file" id="entryImage" accept="image/*">
+  <label for="sender">Sender:</label>
+  <input type="text" id="sender" /><br />
+  <label for="text">Text:</label>
+  <textarea id="text"></textarea><br />
+  <label for="category">Category:</label>
+  <input type="text" id="category" /><br />
+  <label for="font">Font:</label>
+  <input type="text" id="font" /><br />
+  <label for="image">Image URL:</label>
+  <input type="text" id="image" /><br />
+  <label for="password">Password:</label>
+  <input type="password" id="password" /><br />
   <button onclick="submitEntry()">Submit</button>
-  <div class="uploading" id="uploadingStatus">Uploading image...</div>
-</div>
 
-<div class="mood-buttons">
-  <button onclick="sendMood('happy')">😊</button>
-  <button onclick="sendMood('sad')">😢</button>
-  <button onclick="sendMood('love')">❤️</button>
-</div>
+  <div id="entries"></div>
 
-<h2>Filter by Category</h2>
-<select id="filterCategory" onchange="loadEntries()">
-  <option value="All">All</option>
-  <option value="Love Letter">Love Letter</option>
-  <option value="Unsaid Thoughts">Unsaid Thoughts</option>
-  <option value="Rants">Rants</option>
-</select>
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
-<h2>Diary Entries</h2>
-<div id="entries"></div>
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-<h2>Photo Dump</h2>
-<div class="photo-dump" id="photoDump"></div>
+    let currentUser = null;
 
-<div id="toast" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #ff69b4; color: white; padding: 10px 20px; border-radius: 20px; display: none; font-family: 'Quicksand', sans-serif; z-index: 9999;"></div>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyDtHj92IVoxoyz2EtMVaaHVKyPP7UHDpEU",
-    authDomain: "unspoken-hearts-diary.firebaseapp.com",
-    projectId: "unspoken-hearts-diary"
-  };
-  firebase.initializeApp(firebaseConfig);
- const db = firebase.firestore();
-emailjs.init({ publicKey: 'QuFveASS-r2Favhcs' });
-  const PASSWORD = 'usdiary2025';
-
-  // Apply dark mode preference
-  if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
-
-  // Apply font size preference
-  const savedFontSize = localStorage.getItem('fontSize') || '16px';
-  document.getElementById('fontSizeSelector').value = savedFontSize;
-  document.documentElement.style.setProperty('--entry-font-size', savedFontSize);
-
-  function changeFontSize() {
-    const size = document.getElementById('fontSizeSelector').value;
-    document.documentElement.style.setProperty('--entry-font-size', size);
-    localStorage.setItem('fontSize', size);
-  }
-
-  function checkPassword() {
-    const input = document.getElementById('passwordInput').value;
-    if(input === PASSWORD) document.querySelector('.password-screen').style.display = 'none';
-    else showToast('Incorrect password');
-  }
-
-  function toggleDarkMode() {
-    document.body.classList.toggle('dark');
-    const isDark = document.body.classList.contains('dark');
-    localStorage.setItem('darkMode', isDark);
-    document.getElementById('darkModeToggle').textContent = isDark ? '☀️' : '🌙';
-  }
-
-  function submitEntry() {
-    const text = document.getElementById('entryText').value.trim();
-    const sender = document.getElementById('entrySender').value;
-    const category = document.getElementById('entryCategory').value;
-    const font = document.getElementById('fontSelector').value;
-    const fileInput = document.getElementById('entryImage');
-    const file = fileInput.files[0];
-    const uploadingStatus = document.getElementById('uploadingStatus');
-
-    if (!text && !file) {
-      showToast('Please write something or attach an image.');
-      return;
-    }
-
-    const entryData = { text, sender, category, font, timestamp: Date.now(), replies: [], password: PASSWORD };
-
-    if (file) {
-      uploadingStatus.style.display = 'block';
-      const reader = new FileReader();
-      reader.onload = function () {
-        const base64Image = reader.result.split(',')[1];
-        fetch("https://api.imgbb.com/1/upload?key=1466e5972116e365b26ad42b2679d379", {
-          method: "POST",
-          body: new URLSearchParams({ image: base64Image })
-        })
-        .then(res => res.json())
-        .then(data => {
-          entryData.image = data.data.url;
-          saveEntry(entryData);
-          uploadingStatus.style.display = 'none';
-          resetForm();
-        })
-        .catch(() => {
-          uploadingStatus.style.display = 'none';
-          showToast('Image upload failed.');
-        });
-      };
-      reader.readAsDataURL(file);
-    } else {
-      saveEntry(entryData);
-      resetForm();
-    }
-  }
-
-  function resetForm() {
-    document.getElementById('entryText').value = '';
-    document.getElementById('entryImage').value = '';
-    document.getElementById('uploadingStatus').style.display = 'none';
-    loadEntries();
-    showToast('Entry uploaded!');
-  }
-
-  function saveEntry(data) {
-    db.collection('entries').add(data);
-  }
-
-  function loadEntries() {
-    const selectedCategory = document.getElementById('filterCategory').value;
-    db.collection('entries').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
-      const container = document.getElementById('entries');
-      container.innerHTML = '';
-      const dump = document.getElementById('photoDump');
-      dump.innerHTML = '';
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        if (data.password !== PASSWORD) return;
-        if (selectedCategory !== 'All' && data.category !== selectedCategory) return;
-        const div = document.createElement('div');
-        div.className = 'diary-entry ' + data.sender;
-        div.style.fontFamily = data.font || 'Arial, sans-serif';
-        const timeString = new Date(data.timestamp).toLocaleString();
-        let repliesHTML = '';
-        (data.replies || []).forEach((r, idx) => {
-          const replyTime = new Date(r.timestamp).toLocaleString();
-          repliesHTML += `<p>${r.text}<br><small style="font-size:0.75em;color:gray;">${replyTime}</small> <button onclick="deleteReply('${doc.id}', ${idx})">🗑️</button></p>`;
-        });
-        div.innerHTML = `<strong>Category: ${data.category || 'General'}</strong><br><small>${timeString}</small><p>${data.text || ''}</p>${data.image ? `<img src="${data.image}" alt="Attached Image">` : ''}<div class="reply">${repliesHTML}<input type="text" placeholder="Reply..." id="reply-${doc.id}"><button onclick="addReply('${doc.id}')">↩️</button><button onclick="deleteEntry('${doc.id}')">🗑️</button></div>`;
-        container.appendChild(div);
-        if (data.image) {
-          const img = document.createElement('img');
-          img.src = data.image;
-          dump.appendChild(img);
-        }
-      });
-    });
-  }
-
-  function deleteEntry(id) {
-    if (confirm('Are you sure you want to permanently delete this entry?')) {
-      db.collection('entries').doc(id).delete().then(() => {
-        showToast('Entry deleted!');
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        currentUser = user;
+        console.log("Signed in anonymously as:", user.uid);
         loadEntries();
-      }).catch(() => showToast('Failed to delete.'));
-    }
-  }
-
-  function addReply(id) {
-    const replyInput = document.getElementById(`reply-${id}`);
-    const replyText = replyInput.value.trim();
-    if (!replyText) return;
-    const replyWithTime = { text: replyText, timestamp: Date.now() };
-    db.collection('entries').doc(id).update({
-      replies: firebase.firestore.FieldValue.arrayUnion(replyWithTime)
-    }).then(() => { replyInput.value = ''; });
-  }
-
-  function deleteReply(entryId, replyIndex) {
-    const entryRef = db.collection('entries').doc(entryId);
-    entryRef.get().then(doc => {
-      if(doc.exists) {
-        const data = doc.data();
-        const replies = data.replies || [];
-        replies.splice(replyIndex, 1);
-        entryRef.update({ replies: replies });
+      } else {
+        firebase.auth().signInAnonymously().catch((error) => {
+          console.error("Anonymous sign-in failed:", error);
+        });
       }
     });
-  }
 
-function sendMood(mood) {
-  const templateParams = {
-    to_email: 'mrrs06052025@gmail.com',
-    mood: mood,
-    date: new Date().toLocaleString()
-  };
+    function submitEntry() {
+      const entry = {
+        text: document.getElementById("text").value,
+        sender: document.getElementById("sender").value,
+        category: document.getElementById("category").value,
+        font: document.getElementById("font").value,
+        timestamp: new Date(),
+        replies: [],
+        image: document.getElementById("image").value,
+        password: document.getElementById("password").value
+      };
 
-  emailjs.send('service_g01f5f1', 'template_vzvlohc', templateParams)
-    .then(() => showToast('Mood sent!'))
-    .catch((error) => {
-      console.error('Mood send failed:', error);
-      showToast('Failed to send mood.');
-    });
-}
+      // Save entry in both global collection and user-specific path
+      db.collection("entries").add(entry);
 
-  function showToast(message) {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.style.display = 'block';
-    setTimeout(() => { toast.style.display = 'none'; }, 3000);
-  }
+      if (currentUser) {
+        db.collection("entries")
+          .doc(currentUser.uid)
+          .collection("entries")
+          .add(entry)
+          .then(() => {
+            alert("Entry submitted!");
+            document.getElementById("text").value = "";
+            loadEntries();
+          });
+      } else {
+        alert("Not authenticated");
+      }
+    }
 
-  function createFloatingHearts() {
-    const container = document.querySelector('.floating-hearts');
-    setInterval(() => {
-      const heart = document.createElement('div');
-      heart.className = 'heart';
-      heart.style.left = Math.random() * 100 + '%';
-      heart.style.background = ['#ff99cc', '#ff66b2', '#ffb6c1', '#ffcce6'][Math.floor(Math.random() * 4)];
-      container.appendChild(heart);
-      setTimeout(() => heart.remove(), 8000);
-    }, 800);
-  }
+    function loadEntries() {
+      const entriesContainer = document.getElementById("entries");
+      entriesContainer.innerHTML = "";
 
-  createFloatingHearts();
-  loadEntries();
-  document.getElementById('darkModeToggle').textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
-</script>
+      if (currentUser) {
+        db.collection("entries")
+          .doc(currentUser.uid)
+          .collection("entries")
+          .orderBy("timestamp", "desc")
+          .get()
+          .then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+              const data = doc.data();
+              const entryElement = document.createElement("div");
+              entryElement.className = "entry";
+              entryElement.innerHTML = `
+                <p><strong>${data.sender}</strong>: ${data.text}</p>
+                <p><em>Category: ${data.category} | Font: ${data.font}</em></p>
+                ${data.image ? `<img src="${data.image}" style="max-width:100%;">` : ""}
+              `;
+              entriesContainer.appendChild(entryElement);
+            });
+          });
+      }
+    }
+  </script>
 </body>
 </html>
