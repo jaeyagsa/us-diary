@@ -79,9 +79,14 @@
         password: document.getElementById("password").value
       };
 
-      // Save entry in both global collection and user-specific path
-      db.collection("entries").add(entry);
+      // Save entry in global collection
+      db.collection("entries").add(entry).then(() => {
+        console.log("Entry saved in global collection");
+      }).catch((err) => {
+        console.error("Error saving to global collection:", err);
+      });
 
+      // Save entry in user-specific path
       if (currentUser) {
         db.collection("entries")
           .doc(currentUser.uid)
@@ -91,6 +96,8 @@
             alert("Entry submitted!");
             document.getElementById("text").value = "";
             loadEntries();
+          }).catch((error) => {
+            console.error("Error saving user-specific entry:", error);
           });
       } else {
         alert("Not authenticated");
@@ -119,6 +126,8 @@
               `;
               entriesContainer.appendChild(entryElement);
             });
+          }).catch((error) => {
+            console.error("Error loading user-specific entries:", error);
           });
       }
     }
