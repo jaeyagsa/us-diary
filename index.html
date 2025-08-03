@@ -1,97 +1,253 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Unspoken Hearts</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>💌 Unspoken Hearts</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
     body {
       font-family: 'Quicksand', sans-serif;
-      background: #fff6f9;
-      color: #444;
-      margin: 0;
+      background-color: #fff0f5;
+      color: #333;
       padding: 20px;
-      transition: all 0.3s ease;
+      max-width: 800px;
+      margin: auto;
+      animation: fadeInBody 1s ease;
+      overflow-x: hidden;
+      position: relative;
+      transition: background-color 0.5s ease, color 0.5s ease;
     }
-    .diary-entry {
-      background: #ffe7ef;
-      border-radius: 16px;
-      padding: 14px;
-      margin: 10px 0;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      transition: transform 0.2s;
+
+    body * {
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     }
-    .diary-entry:hover {
-      transform: translateY(-2px);
+
+    body.dark {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
     }
-    button {
-      font-family: inherit;
-      border-radius: 6px;
-      border: none;
-      padding: 6px 12px;
-      cursor: pointer;
-      transition: background 0.2s;
+
+    body.dark .diary-entry {
+      background-color: #2a2a2a;
+      color: #e0e0e0;
     }
-    .reply input {
-      padding: 6px;
-      border-radius: 6px;
+
+    body.dark .diary-entry.red { background-color: #4a2b35; }
+    body.dark .diary-entry.blue { background-color: #2b3a4a; }
+
+    body.dark .reply {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    body.dark textarea,
+    body.dark input[type="file"],
+    body.dark input[type="text"],
+    body.dark input[type="password"],
+    body.dark select {
+      background-color: #2a2a2a;
+      color: #e0e0e0;
+      border: 1px solid #555;
+    }
+
+    body.dark button {
+      background-color: #444;
+      color: #fff;
+      border: 1px solid #666;
+    }
+
+    body.dark button:hover {
+      background-color: #ff69b4;
+      color: #fff;
+    }
+
+    body.dark .password-screen {
+      background-color: #1e1e1e;
+      color: #fff;
+    }
+
+    body.dark #toast {
+      background-color: #ff69b4;
+      color: white;
+    }
+
+    @keyframes fadeInBody { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes bounceIn { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
+    @keyframes fadeInEntry { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes floatHeart { 0% { transform: translateY(0) scale(1.2); opacity: 0.8; } 50% { transform: translateY(-300px) scale(1.5); opacity: 0.4; } 100% { transform: translateY(-600px) scale(1); opacity: 0; } }
+
+    h1 {
+      text-align: center;
+      font-size: 40px;
+      font-family: 'Pacifico', cursive;
+      color: #ff69b4;
+      animation: bounceIn 1s ease;
+    }
+
+    h2 { text-align: center; color: #ff69b4; }
+
+    textarea, input[type="file"], select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 12px;
       border: 1px solid #ccc;
-      margin-right: 4px;
-      font-family: inherit;
+      box-sizing: border-box;
     }
-    img {
+
+    button:hover {
+      background-color: #ff69b4;
+      transform: scale(1.05);
+    }
+
+    .password-screen {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #fff0f5;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+    }
+
+    .diary-entry {
+      background: #fffafc;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      padding: 15px;
+      margin-bottom: 15px;
+      animation: fadeInEntry 0.5s ease;
+      font-size: var(--entry-font-size, 16px);
+    }
+
+    .diary-entry.red { background-color: #ffe6f0; }
+    .diary-entry.blue { background-color: #e6f7ff; }
+
+    .diary-entry img {
       max-width: 100%;
-      border-radius: 10px;
+      border-radius: 12px;
       margin-top: 10px;
     }
-    #photoDump img {
-      width: 50px;
-      margin: 4px;
+
+    .reply {
+      margin-top: 15px;
+      background: #f9f9f9;
+      border-radius: 10px;
+      padding: 10px;
     }
-    #toast {
-      visibility: hidden;
-      min-width: 250px;
-      background-color: #ffc4d6;
-      color: #333;
+
+    .photo-dump {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .photo-dump img {
+      max-width: 100px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .mood-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .uploading {
       text-align: center;
-      border-radius: 6px;
-      padding: 16px;
-      position: fixed;
-      z-index: 1;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 1em;
+      font-size: 14px;
+      color: #ff69b4;
+      margin-top: 5px;
+      display: none;
     }
-    #toast.show {
-      visibility: visible;
-      animation: fadein 0.5s, fadeout 0.5s 2.5s;
-    }
-    @keyframes fadein {
-      from {bottom: 0; opacity: 0;} 
-      to {bottom: 30px; opacity: 1;}
-    }
-    @keyframes fadeout {
-      from {bottom: 30px; opacity: 1;}
-      to {bottom: 0; opacity: 0;}
+
+    .heart {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: pink;
+      border-radius: 50%;
+      animation: floatHeart 8s linear infinite;
     }
   </style>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 </head>
 <body>
-<div style="position: fixed; top: 10px; right: 10px; text-align: right; font-family: 'Quicksand', sans-serif;">
-  <div id="authStatus" style="margin-bottom: 6px; font-size: 0.9em; color: #666;"></div>
-  <button onclick="switchToEmailLogin()" style="background: #b794f6; color: white;">🔐 Sign in with Email</button>
-  <button onclick="logout()" style="background: #f7a8a8; color: white; margin-left: 4px;">🚪 Sign out</button>
+<div class="floating-hearts"></div>
+<div class="password-screen">
+  <div>
+    <h2>Enter Shared Password</h2>
+    <input type="password" id="passwordInput" placeholder="Password">
+    <button onclick="checkPassword()">Enter</button>
+  </div>
 </div>
 
+<h1>💌 Unspoken Hearts</h1>
+
+<!-- 🌙/☀️ Toggle + Font Size -->
+<div style="text-align: center; margin-bottom: 10px;">
+  <button id="darkModeToggle" onclick="toggleDarkMode()" style="font-size: 24px; background: none; border: none; cursor: pointer;">🌙</button>
+  <select id="fontSizeSelector" onchange="changeFontSize()" style="margin-left: 10px;">
+    <option value="14px">Small</option>
+    <option value="16px" selected>Medium</option>
+    <option value="18px">Large</option>
+    <option value="20px">Extra Large</option>
+  </select>
+</div>
+
+<div>
+  <select id="entrySender">
+    <option value="red">Jeah</option>
+    <option value="blue">Dave</option>
+  </select>
+  <select id="entryCategory">
+    <option value="Love Letter">Love Letter</option>
+    <option value="Unsaid Thoughts">Unsaid Thoughts</option>
+    <option value="Rants">Rants</option>
+  </select>
+  <select id="fontSelector">
+    <option value="Arial, sans-serif">Arial</option>
+    <option value="Georgia, serif">Georgia</option>
+    <option value="Courier New, monospace">Courier New</option>
+    <option value="Times New Roman, serif">Times New Roman</option>
+  </select>
+  <textarea id="entryText" placeholder="Write something..."></textarea>
+  <input type="file" id="entryImage" accept="image/*">
+  <button onclick="submitEntry()">Submit</button>
+  <div class="uploading" id="uploadingStatus">Uploading image...</div>
+</div>
+
+<div class="mood-buttons">
+  <button onclick="sendMood('happy')">😊</button>
+  <button onclick="sendMood('sad')">😢</button>
+  <button onclick="sendMood('love')">❤️</button>
+</div>
+
+<h2>Filter by Category</h2>
+<select id="filterCategory" onchange="loadEntries()">
+  <option value="All">All</option>
+  <option value="Love Letter">Love Letter</option>
+  <option value="Unsaid Thoughts">Unsaid Thoughts</option>
+  <option value="Rants">Rants</option>
+</select>
+
+<h2>Diary Entries</h2>
 <div id="entries"></div>
-<div id="photoDump"></div>
-<div id="toast"></div>
+
+<h2>Photo Dump</h2>
+<div class="photo-dump" id="photoDump"></div>
+
+<div id="toast" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #ff69b4; color: white; padding: 10px 20px; border-radius: 20px; display: none; font-family: 'Quicksand', sans-serif; z-index: 9999;"></div>
 
 <script>
   const firebaseConfig = {
@@ -100,58 +256,96 @@
     projectId: "unspoken-hearts-diary"
   };
   firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  emailjs.init({ publicKey: 'QuFveASS-r2Favhcs' });
+ const db = firebase.firestore();
+emailjs.init({ publicKey: 'QuFveASS-r2Favhcs' });
   const PASSWORD = 'usdiary2025';
 
-  function showToast(msg) {
-    const toast = document.getElementById('toast');
-    toast.textContent = msg;
-    toast.className = 'show';
-    setTimeout(() => toast.className = toast.className.replace('show', ''), 3000);
+  // Apply dark mode preference
+  if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
+
+  // Apply font size preference
+  const savedFontSize = localStorage.getItem('fontSize') || '16px';
+  document.getElementById('fontSizeSelector').value = savedFontSize;
+  document.documentElement.style.setProperty('--entry-font-size', savedFontSize);
+
+  function changeFontSize() {
+    const size = document.getElementById('fontSizeSelector').value;
+    document.documentElement.style.setProperty('--entry-font-size', size);
+    localStorage.setItem('fontSize', size);
   }
 
-  function switchToEmailLogin() {
-    const email = prompt('Enter email:');
-    const password = prompt('Enter password:');
-    if (email && password) {
-      firebase.auth().signInWithEmailAndPassword(email, password)
-        .catch(error => {
-          if (error.code === 'auth/user-not-found') {
-            firebase.auth().createUserWithEmailAndPassword(email, password)
-              .catch(e => showToast('Error creating account'));
-          } else {
-            showToast('Login failed');
-          }
+  function checkPassword() {
+    const input = document.getElementById('passwordInput').value;
+    if(input === PASSWORD) document.querySelector('.password-screen').style.display = 'none';
+    else showToast('Incorrect password');
+  }
+
+  function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    const isDark = document.body.classList.contains('dark');
+    localStorage.setItem('darkMode', isDark);
+    document.getElementById('darkModeToggle').textContent = isDark ? '☀️' : '🌙';
+  }
+
+  function submitEntry() {
+    const text = document.getElementById('entryText').value.trim();
+    const sender = document.getElementById('entrySender').value;
+    const category = document.getElementById('entryCategory').value;
+    const font = document.getElementById('fontSelector').value;
+    const fileInput = document.getElementById('entryImage');
+    const file = fileInput.files[0];
+    const uploadingStatus = document.getElementById('uploadingStatus');
+
+    if (!text && !file) {
+      showToast('Please write something or attach an image.');
+      return;
+    }
+
+    const entryData = { text, sender, category, font, timestamp: Date.now(), replies: [], password: PASSWORD };
+
+    if (file) {
+      uploadingStatus.style.display = 'block';
+      const reader = new FileReader();
+      reader.onload = function () {
+        const base64Image = reader.result.split(',')[1];
+        fetch("https://api.imgbb.com/1/upload?key=1466e5972116e365b26ad42b2679d379", {
+          method: "POST",
+          body: new URLSearchParams({ image: base64Image })
+        })
+        .then(res => res.json())
+        .then(data => {
+          entryData.image = data.data.url;
+          saveEntry(entryData);
+          uploadingStatus.style.display = 'none';
+          resetForm();
+        })
+        .catch(() => {
+          uploadingStatus.style.display = 'none';
+          showToast('Image upload failed.');
         });
-    }
-  }
-
-  function logout() {
-    firebase.auth().signOut().then(() => showToast('Signed out'));
-  }
-
-  firebase.auth().onAuthStateChanged(user => {
-    if (!user) {
-      firebase.auth().signInAnonymously().catch(error => showToast('Auth failed'));
+      };
+      reader.readAsDataURL(file);
     } else {
-      document.getElementById('authStatus').textContent = user.isAnonymous ? 'Anonymous User' : `Signed in as ${user.email || 'User'}`;
-      loadEntries();
+      saveEntry(entryData);
+      resetForm();
     }
-  });
+  }
+
+  function resetForm() {
+    document.getElementById('entryText').value = '';
+    document.getElementById('entryImage').value = '';
+    document.getElementById('uploadingStatus').style.display = 'none';
+    loadEntries();
+    showToast('Entry uploaded!');
+  }
 
   function saveEntry(data) {
-    const user = firebase.auth().currentUser;
-    if (user) {
-      db.collection('users').doc(user.uid).collection('entries').add(data);
-    }
+    db.collection('entries').add(data);
   }
 
   function loadEntries() {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
-    const selectedCategory = document.getElementById('filterCategory')?.value || 'All';
-    db.collection('users').doc(user.uid).collection('entries').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+    const selectedCategory = document.getElementById('filterCategory').value;
+    db.collection('entries').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
       const container = document.getElementById('entries');
       container.innerHTML = '';
       const dump = document.getElementById('photoDump');
@@ -181,10 +375,8 @@
   }
 
   function deleteEntry(id) {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
     if (confirm('Are you sure you want to permanently delete this entry?')) {
-      db.collection('users').doc(user.uid).collection('entries').doc(id).delete().then(() => {
+      db.collection('entries').doc(id).delete().then(() => {
         showToast('Entry deleted!');
         loadEntries();
       }).catch(() => showToast('Failed to delete.'));
@@ -192,21 +384,17 @@
   }
 
   function addReply(id) {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
     const replyInput = document.getElementById(`reply-${id}`);
     const replyText = replyInput.value.trim();
     if (!replyText) return;
     const replyWithTime = { text: replyText, timestamp: Date.now() };
-    db.collection('users').doc(user.uid).collection('entries').doc(id).update({
+    db.collection('entries').doc(id).update({
       replies: firebase.firestore.FieldValue.arrayUnion(replyWithTime)
     }).then(() => { replyInput.value = ''; });
   }
 
   function deleteReply(entryId, replyIndex) {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
-    const entryRef = db.collection('users').doc(user.uid).collection('entries').doc(entryId);
+    const entryRef = db.collection('entries').doc(entryId);
     entryRef.get().then(doc => {
       if(doc.exists) {
         const data = doc.data();
@@ -216,6 +404,44 @@
       }
     });
   }
+
+function sendMood(mood) {
+  const templateParams = {
+    to_email: 'mrrs06052025@gmail.com',
+    mood: mood,
+    date: new Date().toLocaleString()
+  };
+
+  emailjs.send('service_g01f5f1', 'template_vzvlohc', templateParams)
+    .then(() => showToast('Mood sent!'))
+    .catch((error) => {
+      console.error('Mood send failed:', error);
+      showToast('Failed to send mood.');
+    });
+}
+
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 3000);
+  }
+
+  function createFloatingHearts() {
+    const container = document.querySelector('.floating-hearts');
+    setInterval(() => {
+      const heart = document.createElement('div');
+      heart.className = 'heart';
+      heart.style.left = Math.random() * 100 + '%';
+      heart.style.background = ['#ff99cc', '#ff66b2', '#ffb6c1', '#ffcce6'][Math.floor(Math.random() * 4)];
+      container.appendChild(heart);
+      setTimeout(() => heart.remove(), 8000);
+    }, 800);
+  }
+
+  createFloatingHearts();
+  loadEntries();
+  document.getElementById('darkModeToggle').textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
 </script>
 </body>
 </html>
