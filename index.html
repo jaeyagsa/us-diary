@@ -256,10 +256,11 @@
     projectId: "unspoken-hearts-diary"
   };
  firebase.initializeApp(firebaseConfig);
-firebase.auth().signInAnonymously().catch((error) => {
+firebase.auth().signInAnonymously().catch(error => {
   console.error("Auth failed:", error);
 });
 const db = firebase.firestore();
+
 emailjs.init({ publicKey: 'QuFveASS-r2Favhcs' });
   const PASSWORD = 'usdiary2025';
 
@@ -343,31 +344,48 @@ emailjs.init({ publicKey: 'QuFveASS-r2Favhcs' });
   }
 
   function saveEntry(data) {
-    db.collection('entries').add(data);
+  const user = firebase.auth().currentUser;
+  if (!user) {
+    showToast("Not signed in yet.");
+    return;
   }
+  db.collection("users").doc(user.uid).collection("entries").add(data)
+    .then(() => { showToast("Entry saved!"); })
+    .catch(err => {
+      console.error("Save error:", err);
+      showToast("Error saving: " + err.message);
+    });
+}
 
-  function loadEntries() {
-    const selectedCategory = document.getElementById('filterCategory').value;
-    db.collection('entries').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+function loadEntries() {
+  const selectedCategory = document.getElementById('filterCategory').value;
+  db.collectionGroup('entries')
+    .where('password', '==', PASSWORD)
+    .orderBy('timestamp', 'desc')
+    .onSnapshot(snapshot => {
       const container = document.getElementById('entries');
       container.innerHTML = '';
       const dump = document.getElementById('photoDump');
       dump.innerHTML = '';
+
       snapshot.forEach(doc => {
         const data = doc.data();
-        if (data.password !== PASSWORD) return;
         if (selectedCategory !== 'All' && data.category !== selectedCategory) return;
+
         const div = document.createElement('div');
         div.className = 'diary-entry ' + data.sender;
         div.style.fontFamily = data.font || 'Arial, sans-serif';
         const timeString = new Date(data.timestamp).toLocaleString();
+
         let repliesHTML = '';
         (data.replies || []).forEach((r, idx) => {
           const replyTime = new Date(r.timestamp).toLocaleString();
           repliesHTML += `<p>${r.text}<br><small style="font-size:0.75em;color:gray;">${replyTime}</small> <button onclick="deleteReply('${doc.id}', ${idx})">🗑️</button></p>`;
         });
+
         div.innerHTML = `<strong>Category: ${data.category || 'General'}</strong><br><small>${timeString}</small><p>${data.text || ''}</p>${data.image ? `<img src="${data.image}" alt="Attached Image">` : ''}<div class="reply">${repliesHTML}<input type="text" placeholder="Reply..." id="reply-${doc.id}"><button onclick="addReply('${doc.id}')">↩️</button><button onclick="deleteEntry('${doc.id}')">🗑️</button></div>`;
         container.appendChild(div);
+
         if (data.image) {
           const img = document.createElement('img');
           img.src = data.image;
@@ -375,7 +393,7 @@ emailjs.init({ publicKey: 'QuFveASS-r2Favhcs' });
         }
       });
     });
-  }
+}
 
   function deleteEntry(id) {
     if (confirm('Are you sure you want to permanently delete this entry?')) {
