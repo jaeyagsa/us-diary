@@ -1,16 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- head content unchanged -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unspoken Hearts</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap">
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: #fff6f9;
+      color: #444;
+      margin: 0;
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+    .diary-entry {
+      background: #ffe7ef;
+      border-radius: 16px;
+      padding: 14px;
+      margin: 10px 0;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+    .diary-entry:hover {
+      transform: translateY(-2px);
+    }
+    button {
+      font-family: inherit;
+      border-radius: 6px;
+      border: none;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .reply input {
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-right: 4px;
+      font-family: inherit;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    #photoDump img {
+      width: 50px;
+      margin: 4px;
+    }
+    #toast {
+      visibility: hidden;
+      min-width: 250px;
+      background-color: #ffc4d6;
+      color: #333;
+      text-align: center;
+      border-radius: 6px;
+      padding: 16px;
+      position: fixed;
+      z-index: 1;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1em;
+    }
+    #toast.show {
+      visibility: visible;
+      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+    @keyframes fadein {
+      from {bottom: 0; opacity: 0;} 
+      to {bottom: 30px; opacity: 1;}
+    }
+    @keyframes fadeout {
+      from {bottom: 30px; opacity: 1;}
+      to {bottom: 0; opacity: 0;}
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 </head>
 <body>
-<div style="position: fixed; top: 10px; right: 10px; text-align: right; font-family: 'Segoe UI', sans-serif;">
+<div style="position: fixed; top: 10px; right: 10px; text-align: right; font-family: 'Quicksand', sans-serif;">
   <div id="authStatus" style="margin-bottom: 6px; font-size: 0.9em; color: #666;"></div>
-  <button onclick="switchToEmailLogin()" style="padding: 6px 12px; background: #5b8def; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em;">🔐 Sign in with Email</button>
-  <button onclick="logout()" style="padding: 6px 12px; background: #f25c5c; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; margin-left: 4px;">🚪 Sign out</button>
+  <button onclick="switchToEmailLogin()" style="background: #b794f6; color: white;">🔐 Sign in with Email</button>
+  <button onclick="logout()" style="background: #f7a8a8; color: white; margin-left: 4px;">🚪 Sign out</button>
 </div>
 
-<!-- body content before script unchanged -->
+<div id="entries"></div>
+<div id="photoDump"></div>
+<div id="toast"></div>
+
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyDtHj92IVoxoyz2EtMVaaHVKyPP7UHDpEU",
@@ -68,7 +150,7 @@
   function loadEntries() {
     const user = firebase.auth().currentUser;
     if (!user) return;
-    const selectedCategory = document.getElementById('filterCategory').value;
+    const selectedCategory = document.getElementById('filterCategory')?.value || 'All';
     db.collection('users').doc(user.uid).collection('entries').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
       const container = document.getElementById('entries');
       container.innerHTML = '';
