@@ -6,6 +6,7 @@
   <title>💌 Unspoken Hearts</title>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
@@ -256,6 +257,9 @@
   };
   firebase.initializeApp(firebaseConfig);
  const db = firebase.firestore();
+  firebase.auth().signInAnonymously().catch(error => {
+  console.error("Auth error:", error);
+});
 emailjs.init({ publicKey: 'QuFveASS-r2Favhcs' });
   const PASSWORD = 'usdiary2025';
 
@@ -339,12 +343,19 @@ emailjs.init({ publicKey: 'QuFveASS-r2Favhcs' });
   }
 
   function saveEntry(data) {
-    db.collection('entries').add(data);
+    firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    db.collection("users").doc(user.uid).collection("entries").add(data);
+  } else {
+    showToast("User not signed in");
   }
-
+});
   function loadEntries() {
     const selectedCategory = document.getElementById('filterCategory').value;
-    db.collection('entries').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+   db.collectionGroup('entries')
+  .where('password', '==', PASSWORD)
+  .orderBy('timestamp', 'desc')
+  .onSnapshot(snapshot => {
       const container = document.getElementById('entries');
       container.innerHTML = '';
       const dump = document.getElementById('photoDump');
