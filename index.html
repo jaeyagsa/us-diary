@@ -255,8 +255,11 @@
     authDomain: "unspoken-hearts-diary.firebaseapp.com",
     projectId: "unspoken-hearts-diary"
   };
-  firebase.initializeApp(firebaseConfig);
- const db = firebase.firestore();
+ firebase.initializeApp(firebaseConfig);
+firebase.auth().signInAnonymously().catch((error) => {
+  console.error("Auth failed:", error);
+});
+const db = firebase.firestore();
 emailjs.init({ publicKey: 'QuFveASS-r2Favhcs' });
   const PASSWORD = 'usdiary2025';
 
