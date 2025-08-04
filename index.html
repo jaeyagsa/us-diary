@@ -360,10 +360,12 @@ emailjs.init({ publicKey: 'QuFveASS-r2Favhcs' });
 
 function loadEntries() {
   const selectedCategory = document.getElementById('filterCategory').value;
-  db.collectionGroup('entries')
-    .where('password', '==', PASSWORD)
-    .orderBy('timestamp', 'desc')
-    .onSnapshot(snapshot => {
+  db.collection('entries')
+  .where('password', '==', PASSWORD)
+  .orderBy('timestamp', 'desc')
+  .onSnapshot(snapshot => {
+    // render entries
+  });
       const container = document.getElementById('entries');
       container.innerHTML = '';
       const dump = document.getElementById('photoDump');
