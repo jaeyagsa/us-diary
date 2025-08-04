@@ -50,14 +50,8 @@
       animation: float 8s linear infinite;
     }
     @keyframes float {
-      0% {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-      }
-      100% {
-        transform: translateY(-100vh) scale(0.5);
-        opacity: 0;
-      }
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
     }
     #toast {
       position: fixed;
@@ -76,6 +70,26 @@
       border-radius: 6px;
       margin: 10px 0;
     }
+    .entry-form {
+      margin: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background-color: #f9f9f9;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .entry-form textarea,
+    .entry-form select,
+    .entry-form button {
+      width: 100%;
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-family: 'Quicksand', sans-serif;
+    }
+    .entry-form.dark {
+      background-color: #2a2a2a;
+    }
   </style>
 </head>
 <body>
@@ -90,7 +104,16 @@
 
   <button id="darkModeToggle">🌙</button>
   <button onclick="sendMood('happy')">Send Mood</button>
-  <input type="file" id="imageInput" />
+
+  <div class="entry-form" id="entryForm">
+    <textarea id="entryText" placeholder="Write your entry here..."></textarea>
+    <select id="entrySender">
+      <option value="Jeah">Jeah</option>
+      <option value="Dave">Dave</option>
+    </select>
+    <input type="file" id="imageInput" />
+    <button onclick="submitEntry()">Submit Entry</button>
+  </div>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -112,6 +135,7 @@
   <script>
     const PASSWORD = 'usdiary2025';
     const IMAGEBB_API_KEY = '1466e5972116e365b26ad42b2679d379';
+    let currentImageUrl = '';
 
     window.checkPassword = function () {
       const input = document.getElementById('passwordInput').value;
@@ -122,13 +146,19 @@
       }
     };
 
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.display = 'block';
+      setTimeout(() => toast.style.display = 'none', 3000);
+    }
+
     function sendMood(mood) {
       const templateParams = {
         to_email: 'mrrs06052025@gmail.com',
         mood: mood,
         date: new Date().toLocaleString()
       };
-
       emailjs.send('service_g01f5f1', 'template_vzvlohc', templateParams)
         .then(() => showToast('Mood sent!'))
         .catch((error) => {
@@ -137,13 +167,53 @@
         });
     }
 
-    function showToast(message) {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.style.display = 'block';
-      setTimeout(() => {
-        toast.style.display = 'none';
-      }, 3000);
+    document.getElementById("imageInput").addEventListener("change", function () {
+      const file = this.files[0];
+      const formData = new FormData();
+      formData.append("image", file);
+      fetch("https://api.imgbb.com/1/upload?key=" + IMAGEBB_API_KEY, {
+        method: "POST",
+        body: formData
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            currentImageUrl = data.data.url;
+            showToast("Image uploaded!");
+          } else {
+            showToast("Upload failed.");
+          }
+        })
+        .catch(() => showToast("Error uploading image."));
+    });
+
+    function submitEntry() {
+      const text = document.getElementById('entryText').value;
+      const sender = document.getElementById('entrySender').value;
+
+      if (!text) return showToast("Entry cannot be empty.");
+
+      firebase.auth().signInAnonymously()
+        .then(() => {
+          const uid = firebase.auth().currentUser.uid;
+          return db.collection("users").doc(uid).collection("entries").add({
+            text,
+            sender,
+            image: currentImageUrl || '',
+            shared: true,
+            password: PASSWORD,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        })
+        .then(() => {
+          showToast("Entry submitted!");
+          document.getElementById("entryText").value = '';
+          currentImageUrl = '';
+        })
+        .catch((error) => {
+          console.error("Error saving entry:", error);
+          showToast("Failed to save entry.");
+        });
     }
 
     function createFloatingHearts() {
@@ -161,7 +231,6 @@
     function loadEntries() {
       const container = document.createElement('div');
       document.body.appendChild(container);
-
       firebase.auth().signInAnonymously()
         .then(() => {
           const user = firebase.auth().currentUser;
@@ -192,28 +261,8 @@
 
     document.getElementById('darkModeToggle').addEventListener('click', () => {
       document.body.classList.toggle('dark');
+      document.getElementById('entryForm').classList.toggle('dark');
       document.getElementById('darkModeToggle').textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
-    });
-
-    document.getElementById("imageInput").addEventListener("change", function () {
-      const file = this.files[0];
-      const formData = new FormData();
-      formData.append("image", file);
-
-      fetch("https://api.imgbb.com/1/upload?key=" + IMAGEBB_API_KEY, {
-        method: "POST",
-        body: formData
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            showToast("Image uploaded!");
-            console.log("Image URL:", data.data.url);
-          } else {
-            showToast("Upload failed.");
-          }
-        })
-        .catch(() => showToast("Error uploading image."));
     });
 
     createFloatingHearts();
