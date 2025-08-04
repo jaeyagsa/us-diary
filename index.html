@@ -350,7 +350,7 @@ emailjs.init({ publicKey: 'QuFveASS-r2Favhcs' });
     showToast("Not signed in yet.");
     return;
   }
-  db.collection("users").doc(user.uid).collection("entries").add(data)
+ db.collection("entries").add(data)
     .then(() => { showToast("Entry saved!"); })
     .catch(err => {
       console.error("Save error:", err);
