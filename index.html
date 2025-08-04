@@ -257,8 +257,12 @@
     projectId: "unspoken-hearts-diary"
   };
  firebase.initializeApp(firebaseConfig);
-firebase.auth().signInAnonymously().catch(error => {
-  console.error("Auth failed:", error);
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    loadEntries();
+  } else {
+    console.warn("User not signed in.");
+  }
 });
 const db = firebase.firestore();
 
